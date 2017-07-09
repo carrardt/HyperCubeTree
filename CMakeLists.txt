@@ -5,3 +5,5 @@ add_compile_options(-std=c++11 -pthread)
 add_definitions(-DPROFILING=1)
 
 add_subdirectory(tests)
+
+add_subdirectory(hydro)
