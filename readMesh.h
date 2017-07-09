@@ -5,6 +5,7 @@
 #include "PointIds.h"
 
 #include <fstream>
+#include <string>
 
 namespace AmrReconstruction3
 {
@@ -62,29 +63,29 @@ using namespace AmrReconstruction3;
 
 int main(int argc, char* argv[])
 {
-  // verification du nombre minimal d'arguments
-  if( argc<2 )
+	// verification du nombre minimal d'arguments
+	if( argc<2 )
     {
       cerr<<"Utilisation: "<<argv[0]<<" <nom_du_fichier> [ [-a] | [-c] [-p] [-s] ]"<<endl;
       return 1;
     }
 
-  // lecture des options
-  bool printCells=false;
-  bool printPoints=false;
-  bool printScalars=false;
-  for(int i=2;i<argc;i++)
-    {
-      if( strcmp(argv[i],"-c")==0 ) printCells=true;
-      if( strcmp(argv[i],"-p")==0 ) printPoints=true;
-      if( strcmp(argv[i],"-s")==0 ) printScalars=true;
-      if( strcmp(argv[i],"-a")==0 )
+	// lecture des options
+	bool printCells=false;
+	bool printPoints=false;
+	bool printScalars=false;
+	for(int i=2;i<argc;i++)
 	{
-	  printCells=true;
-	  printPoints=true;
-	  printScalars=true;
+		if( std::string(argv[i]) == "-c" ) printCells=true;
+		if( std::string(argv[i]) == "-p" ) printPoints=true;
+		if( std::string(argv[i]) == "-s" ) printScalars=true;
+		if( std::string(argv[i]) == "-a" )
+		{
+		  printCells=true;
+		  printPoints=true;
+		  printScalars=true;
+		}
 	}
-    }
 
   // lecture et affichage du maillage
   int nc=0;

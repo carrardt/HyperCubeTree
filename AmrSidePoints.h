@@ -42,9 +42,9 @@ namespace AmrReconstruction3
   struct AmrSidePoints
   {
     enum { D = _D };
-    typedef PointIds<D> PointIds;
-    typedef LevelInfo<D> LevelInfo;
-    typedef AmrConnect<D> AmrConnect;
+    using PointIds = AmrReconstruction3::PointIds<D>;
+    using LevelInfo = AmrReconstruction3::LevelInfo<D>;
+    using AmrConnect = AmrReconstruction3::AmrConnect<D>;
 
     inline AmrSidePoints() : sidePoints(0), pointIds(0), nPointIds(0), sidePointArray(0) {}
 

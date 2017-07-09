@@ -3,9 +3,12 @@ EXE=_TEST_ConstBits _TEST_PointIds _TEST_Vec _TEST_GridEnum _TEST_readMesh _TEST
 #CXX=colorgcc
 CXX=g++
 #CFLAGS=-g3 -DDEBUG=1
-CFLAGS=-march=native -mtune=native -O3 -finline-limit=1000000000 -DPROFILING=1
+CFLAGS=-march=native -mtune=native -O3 -std=c++11 -finline-limit=1000000000 -DPROFILING=1
 
-all: $(EXE)
+all: builddir $(EXE)
+
+builddir:
+	mkdir -p build
 
 _TEST_%: %.h
 	$(CXX) -xc++ $(CFLAGS) -D$@=1 $< -o $@

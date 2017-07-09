@@ -12,9 +12,9 @@ namespace AmrReconstruction3
   template<unsigned int _D,typename _Mask> struct PointConnect
   {
     enum { D = _D };
-    typedef _Mask Mask;
-    typedef PointIds<D> PointIds;
-    typedef typename AmrConnect<D>::ElementInfo ElementInfo;
+    using Mask = _Mask;
+    using PointIds = AmrReconstruction3::PointIds<D> ;
+    using ElementInfo = typename AmrReconstruction3::AmrConnect<D>::ElementInfo ;
 
     inline PointConnect(AmrSidePoints<D>& s, int l, int n, const ElementInfo& _nbh )
       :  self(s), level(l), node(n), nbh(_nbh) {}
@@ -79,8 +79,8 @@ namespace AmrReconstruction3
   template<unsigned int _D> struct ElementConnect
   {
     enum { D = _D };
-    typedef PointIds<D> PointIds;
-    typedef typename AmrConnect<D>::ElementInfo ElementInfo;
+    using PointIds = AmrReconstruction3::PointIds<D>;
+    using ElementInfo = typename AmrReconstruction3::AmrConnect<D>::ElementInfo;
 
     inline ElementConnect(AmrSidePoints<D>& s) : self(s), level(0), node(-1) {}
     template<typename M> inline void processComponent(const CubeEnum<ElementInfo,0,M>& c)

@@ -5,6 +5,7 @@
 #include "AmrLevels.h"
 
 #include <assert.h>
+#include <string.h>
 
 namespace AmrReconstruction3
 {

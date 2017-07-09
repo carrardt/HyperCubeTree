@@ -31,9 +31,9 @@ namespace AmrReconstruction3
   template <typename T,unsigned int D>
     struct AmrLevels
     {
-      typedef AmrCellSize<T,D> AmrCellSize;
-      typedef Grid<D> Grid;
-      typedef LevelInfo<D> LevelInfo;
+		using AmrCellSize = AmrReconstruction3::AmrCellSize<T,D>;
+        using Grid = AmrReconstruction3::Grid<D>;
+		using LevelInfo = AmrReconstruction3::LevelInfo<D> ;
 
       typedef std::map<AmrCellSize,LevelInfo> LevelMap;     
       typedef typename LevelMap::iterator LevelMapIterator;

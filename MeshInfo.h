@@ -14,8 +14,8 @@ namespace AmrReconstruction3
   template <unsigned int D>
     struct MeshConnectivity
     {
-      typedef PointIds<D> PointIds;
-      typedef Vec<bool,D> Path;
+      using PointIds = AmrReconstruction3::PointIds<D>;
+      using Path = Vec<bool,D>;
 
       int nCells;
       PointIds * pointIds;
@@ -94,9 +94,9 @@ namespace AmrReconstruction3
 
   template<typename T, unsigned int D> struct MeshGeometry
   {
-    typedef PointIds<D> PointIds;
-    typedef Vec<T,D> Vec;
-    typedef AmrCellSize<T,D> CellSize;
+    using PointIds = AmrReconstruction3::PointIds<D>;
+    using Vec = AmrReconstruction3::Vec<T,D>;
+    using CellSize = AmrReconstruction3::AmrCellSize<T,D>;
 
     int nPoints;
     Vec* points;
