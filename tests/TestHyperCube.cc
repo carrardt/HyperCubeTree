@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-using namespace AmrReconstruction3;
+using namespace hct;
 
 struct PrintCBitField
 {

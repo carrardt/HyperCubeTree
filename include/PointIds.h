@@ -1,7 +1,7 @@
 #ifndef __POINT_IDS_H
 #define __POINT_IDS_H
 
-namespace AmrReconstruction3
+namespace hct
 {
 
   template <unsigned int D> struct PointIds
@@ -33,6 +33,6 @@ namespace AmrReconstruction3
     int nodes[Size];
   };
   
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif

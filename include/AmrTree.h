@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <string.h>
 
-namespace AmrReconstruction3
+namespace hct
 {
 
   struct TreeNode
@@ -222,6 +222,6 @@ namespace AmrReconstruction3
     TreeNode* allNodes;
   };
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif

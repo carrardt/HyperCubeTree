@@ -4,7 +4,7 @@
 #include "Vec.h"
 #include "AmrLevels.h"
 
-namespace AmrReconstruction3
+namespace hct
 {
   template <unsigned int D, unsigned int D2, typename ProcObj> struct GridEnum;
 
@@ -33,6 +33,6 @@ namespace AmrReconstruction3
       GridEnum<D,0,ProcObj>::enumerate(grid,Vec<unsigned int,0>(),proc);
     }
 
-}; // AmrReconstruction3
+}; // hct
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef __POINT_STATUS_H
 #define __POINT_STATUS_H
 
-namespace AmrReconstruction3
+namespace hct
 {
 
   template<typename T, unsigned int _D> struct Vec;
@@ -34,7 +34,7 @@ namespace AmrReconstruction3
     }
   };
 
-}; // AmrReconstruction3
+}; // hct
 
 #endif
 /* ===================================================================================================================*/

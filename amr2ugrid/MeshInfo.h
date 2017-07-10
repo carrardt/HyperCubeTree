@@ -9,13 +9,15 @@
 #include "PointIds.h"
 #include "PathBits.h"
 
-namespace AmrReconstruction3
+namespace Amr2Ugrid
 {
+	using namespace hct;
+	
   template <unsigned int D>
     struct MeshConnectivity
     {
-      using PointIds = AmrReconstruction3::PointIds<D>;
-      using Path = Vec<bool,D>;
+      using PointIds = hct::PointIds<D>;
+      using Path = hct::Vec<bool,D>;
 
       int nCells;
       PointIds * pointIds;
@@ -60,7 +62,7 @@ namespace AmrReconstruction3
       }
 
       template<typename T>
-      inline void init( const PointIds* indices, const Vec<T,D>* points )
+      inline void init( const PointIds* indices, const hct::Vec<T,D>* points )
       {
 	pointIds = new PointIds[ nCells ];
 	enabled = new bool[ nCells ];
@@ -68,11 +70,11 @@ namespace AmrReconstruction3
 	for(int i=0;i<nCells;i++)
 	  {
 	    // calcul min/max et centre
-	    Vec<T,D> p0 = points[indices[i].nodes[0]];
-	    Vec<T,D> center(p0);
+	    hct::Vec<T,D> p0 = points[indices[i].nodes[0]];
+	    hct::Vec<T,D> center(p0);
 	    for(int j=1 ; j<PointIds::Size ; j++)
 	      {
-		Vec<T,D> p = points[ indices[i].nodes[j] ];
+		hct::Vec<T,D> p = points[ indices[i].nodes[j] ];
 		center += p;
 	      }
 	    center /= PointIds::Size;
@@ -82,7 +84,7 @@ namespace AmrReconstruction3
 	    for(int j=0 ; j<PointIds::Size ; j++)
 	      {
 		const int index = indices[i].nodes[j];
-		Vec<T,D> p = points[ index ];
+		hct::Vec<T,D> p = points[ index ];
 		Path path = ( p > center );
 		unsigned int pi = PathBits<D>::fromPath( path );
 		pointIds[i].nodes[ pi ] = index;
@@ -94,9 +96,9 @@ namespace AmrReconstruction3
 
   template<typename T, unsigned int D> struct MeshGeometry
   {
-    using PointIds = AmrReconstruction3::PointIds<D>;
-    using Vec = AmrReconstruction3::Vec<T,D>;
-    using CellSize = AmrReconstruction3::AmrCellSize<T,D>;
+    using PointIds = hct::PointIds<D>;
+    using Vec = hct::Vec<T,D>;
+    using CellSize = hct::AmrCellSize<T,D>;
 
     int nPoints;
     Vec* points;
@@ -183,6 +185,6 @@ namespace AmrReconstruction3
   };
   
 
-}; // namespace AmrReconstruction3
+}; // namespace Amr2Ugrid
 
 #endif

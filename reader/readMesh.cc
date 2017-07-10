@@ -1,16 +1,15 @@
-#ifndef __READ_MESH_H
-#define __READ_MESH_H
-
 #include "Vec.h"
 #include "PointIds.h"
 
 #include <fstream>
 #include <string>
 
-namespace AmrReconstruction3
+namespace hctreader
 {
 
-  static inline bool readMesh(const char* fileName,
+	using namespace hct;
+
+  bool readMesh(const char* fileName,
 			      int& nc, int& np,
 			      PointIds<3>*& indices,
 			      Vec3f*& points,
@@ -49,7 +48,6 @@ namespace AmrReconstruction3
     return true;
   }
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
-#endif //__AMR_VEC_H
 

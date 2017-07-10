@@ -4,7 +4,7 @@
 #include "Vec.h"
 #include "ConstBits.h"
 
-namespace AmrReconstruction3
+namespace hct
 {
   // Enumeration de l'ensemble des constituants d'un D-cube (i.e. tous les n-cubes internes, pour 0<=n<=D)
   template <typename T, unsigned int D, typename Mask=NullBitField> struct CubeEnum;
@@ -77,6 +77,6 @@ namespace AmrReconstruction3
     }
   };
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif

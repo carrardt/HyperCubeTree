@@ -3,7 +3,7 @@
 
 #include "HyperCube.h"
 
-namespace AmrReconstruction3
+namespace hct
 {
    template<typename T, unsigned int DecD, unsigned int IncD=0> struct Nbh;
 
@@ -90,6 +90,6 @@ namespace AmrReconstruction3
      }
    };
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif

@@ -13,16 +13,15 @@
 #ifdef DEBUG
 #include <iostream>
 #include <set>
-
 #include "MeshInfo.h"
 #include "PathBits.h"
-AmrReconstruction3::MeshConnectivity<3> mesh;
-AmrReconstruction3::MeshGeometry<float,3> geom;
-AmrReconstruction3::AmrLevels<float,3> levels;
+Amr2Ugrid::MeshConnectivity<3> mesh;
+Amr2Ugrid::MeshGeometry<float,3> geom;
+hct::AmrLevels<float,3> levels;
 int* cellNode = 0;
 int* cellDepth = 0;
-AmrReconstruction3::Vec<float,3>* cellCenter = 0;
-AmrReconstruction3::AmrCellSize<float,3>* cellSize = 0;
+hct::Vec<float,3>* cellCenter = 0;
+hct::AmrCellSize<float,3>* cellSize = 0;
 int** nodeCellId = 0;
 std::set<int> ** sidePointSet = 0;
 #endif
@@ -35,16 +34,18 @@ std::set<int> ** sidePointSet = 0;
 #include "InterLevelPointConnect.h"
 #include "SidePointInsert.h"
 
-namespace AmrReconstruction3
+namespace Amr2Ugrid
 {
+
+	using namespace hct;
 
   template<unsigned int _D>
   struct AmrSidePoints
   {
     enum { D = _D };
-    using PointIds = AmrReconstruction3::PointIds<D>;
-    using LevelInfo = AmrReconstruction3::LevelInfo<D>;
-    using AmrConnect = AmrReconstruction3::AmrConnect<D>;
+    using PointIds = hct::PointIds<D>;
+    using LevelInfo = hct::LevelInfo<D>;
+    using AmrConnect = Amr2Ugrid::AmrConnect<D>;
 
     inline AmrSidePoints() : sidePoints(0), pointIds(0), nPointIds(0), sidePointArray(0) {}
 
@@ -242,6 +243,6 @@ namespace AmrReconstruction3
     int * sidePointArray;
   };
 
-}; // AmrReconstruction3
+}; // Amr2Ugrid
 
 #endif

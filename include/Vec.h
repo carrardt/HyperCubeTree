@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-namespace AmrReconstruction3
+namespace hct
 {
 
   template <typename T,unsigned int D>
@@ -224,6 +224,6 @@ namespace AmrReconstruction3
   typedef Vec<unsigned int,3> Vec3ui;
   typedef Vec<unsigned int,4> Vec4ui;
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif //__AMR_VEC_H

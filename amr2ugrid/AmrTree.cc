@@ -1,11 +1,12 @@
+#include "Vec.h"
+#include "AmrLevels.h"
 #include "AmrTree.h"
-
 
 #include <iostream>
 #include <fstream>
 using namespace std;
 
-using namespace AmrReconstruction3;
+using namespace hct;
 
 int main(int argc, char* argv[])
 {

@@ -6,7 +6,7 @@
 
 #include <map>
 
-namespace AmrReconstruction3
+namespace hct
 {
 
   template<unsigned int D>
@@ -31,9 +31,9 @@ namespace AmrReconstruction3
   template <typename T,unsigned int D>
     struct AmrLevels
     {
-		using AmrCellSize = AmrReconstruction3::AmrCellSize<T,D>;
-        using Grid = AmrReconstruction3::Grid<D>;
-		using LevelInfo = AmrReconstruction3::LevelInfo<D> ;
+		using AmrCellSize = hct::AmrCellSize<T,D>;
+        using Grid = hct::Grid<D>;
+		using LevelInfo = hct::LevelInfo<D> ;
 
       typedef std::map<AmrCellSize,LevelInfo> LevelMap;     
       typedef typename LevelMap::iterator LevelMapIterator;
@@ -134,6 +134,6 @@ namespace AmrReconstruction3
       AmrCellSize* levelSize;
     };
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif

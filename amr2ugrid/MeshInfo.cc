@@ -6,7 +6,8 @@
 using namespace std;
 
 #include "readMesh.h"
-using namespace AmrReconstruction3;
+using namespace Amr2Ugrid;
+using namespace hctreader;
 
 int main(int argc, char* argv[])
 {

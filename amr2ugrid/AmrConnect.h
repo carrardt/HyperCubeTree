@@ -8,15 +8,17 @@
 #include "Vec.h"
 #include "GridEnum.h"
 
-namespace AmrReconstruction3
+namespace Amr2Ugrid
 {
+
+	using namespace hct;
 
   template<unsigned int _D> struct AmrConnect
   {
     enum { D = _D };
 
-    typedef Vec<bool,D> SlideFlags;
-    typedef Vec<unsigned int,D> Coord;
+    using SlideFlags = hct::Vec<bool,D> ;
+    using Coord = hct::Vec<unsigned int,D>;
 
     struct ElementInfo
     {
@@ -227,6 +229,6 @@ namespace AmrReconstruction3
   };
 
 
-}; // AmrReconstruction3
+}; // Amr2Ugrid
 
 #endif

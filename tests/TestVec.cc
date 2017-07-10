@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-using namespace AmrReconstruction3;
+using namespace hct;
 
 template <typename T, unsigned int D>
   inline ostream & operator << (ostream& out, const Vec<T,D>& v)

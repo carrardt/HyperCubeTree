@@ -1,20 +1,23 @@
 #ifndef __POINT_CONNECT_H
 #define __POINT_CONNECT_H
 
-namespace AmrReconstruction3
+#include "Vec.h"
+#include "PointStatus.h"
+
+namespace Amr2Ugrid
 {
+
+	using namespace hct;
 
   template<unsigned int _D> struct AmrSidePoints;
   template<unsigned int _D> struct AmrConnect;
-  template<unsigned int _D> struct PointStatus;
-  template<typename T, unsigned int _D> struct Vec;
 
   template<unsigned int _D,typename _Mask> struct PointConnect
   {
     enum { D = _D };
     using Mask = _Mask;
-    using PointIds = AmrReconstruction3::PointIds<D> ;
-    using ElementInfo = typename AmrReconstruction3::AmrConnect<D>::ElementInfo ;
+    using PointIds = hct::PointIds<D> ;
+    using ElementInfo = typename Amr2Ugrid::AmrConnect<D>::ElementInfo ;
 
     inline PointConnect(AmrSidePoints<D>& s, int l, int n, const ElementInfo& _nbh )
       :  self(s), level(l), node(n), nbh(_nbh) {}
@@ -79,8 +82,8 @@ namespace AmrReconstruction3
   template<unsigned int _D> struct ElementConnect
   {
     enum { D = _D };
-    using PointIds = AmrReconstruction3::PointIds<D>;
-    using ElementInfo = typename AmrReconstruction3::AmrConnect<D>::ElementInfo;
+    using PointIds = Amr2Ugrid::PointIds<D>;
+    using ElementInfo = typename Amr2Ugrid::AmrConnect<D>::ElementInfo;
 
     inline ElementConnect(AmrSidePoints<D>& s) : self(s), level(0), node(-1) {}
     template<typename M> inline void processComponent(const CubeEnum<ElementInfo,0,M>& c)
@@ -95,7 +98,7 @@ namespace AmrReconstruction3
     int level,node;
   };
 
-}; // AmrReconstruction3
+}; // Amr2Ugrid
 
 #endif
 /* ===================================================================================================================*/

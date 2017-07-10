@@ -2,7 +2,7 @@
 #define __CONST_BITS_H
 
 
-namespace AmrReconstruction3
+namespace hct
 {
 
   // Description des valeurs possibles d'un bit (l'information est entierement contenue dans le type)
@@ -122,6 +122,6 @@ namespace AmrReconstruction3
 
 
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif

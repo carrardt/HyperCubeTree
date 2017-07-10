@@ -3,7 +3,7 @@
 
 #include "Vec.h"
 
-namespace AmrReconstruction3
+namespace hct
 {
   // la seule coherence a verifier est celle entre PathBits<>::fromPath() et GridInfo<>::branch()
 
@@ -22,6 +22,6 @@ namespace AmrReconstruction3
     }
   };
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif

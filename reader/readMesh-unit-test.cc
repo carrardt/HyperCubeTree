@@ -2,7 +2,8 @@
 
 #include <iostream>
 using namespace std;
-using namespace AmrReconstruction3;
+using namespace hct;
+using namespace hctreader;
 
 int main(int argc, char* argv[])
 {

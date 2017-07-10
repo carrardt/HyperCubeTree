@@ -5,7 +5,7 @@
 #include <string>
 using namespace std;
 
-using namespace AmrReconstruction3;
+using namespace hct;
 
 char tmp[255];
 

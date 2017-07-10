@@ -5,7 +5,7 @@
 
 #define SQRT2 1.4142135623730951
 
-namespace AmrReconstruction3
+namespace hct
 {
   /*---------------------------------------------------------
     description de la taille d'un hypercube de dimension D
@@ -53,7 +53,7 @@ namespace AmrReconstruction3
       }
     };
 
-}; // namespace AmrReconstruction3
+}; // namespace hct
 
 #endif
 /* ================================================================== */
@@ -64,7 +64,7 @@ namespace AmrReconstruction3
 #include <iostream>
 using namespace std;
 
-using namespace AmrReconstruction3;
+using namespace hct;
 
 typedef AmrCellSize<double,3> Size3;
 

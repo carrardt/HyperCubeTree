@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 using namespace std;
-using namespace AmrReconstruction3;
+using namespace Amr2Ugrid;
 
 int main(int argc, char* argv[])
 {

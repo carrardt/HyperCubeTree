@@ -2,7 +2,7 @@
 
 #include <iostream>
 using namespace std;
-using namespace AmrReconstruction3;
+using namespace hct;
 
 char tmp[256];
 template<unsigned int D> struct Input;

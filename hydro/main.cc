@@ -1,10 +1,11 @@
-#include "AmrConnect.h"
+#include "AmrTree.h"
+#include "AmrLevels.h"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 using namespace std;
-using namespace AmrReconstruction3;
+using namespace hct;
 
 int main(int argc, char* argv[])
 {
@@ -40,8 +41,6 @@ int main(int argc, char* argv[])
   tree.fromBinaryStream(fic_tree);
   fic_tree.close();
   tree.toStream(cout); cout<<endl;
-
-	
 
   return 0;
 }
