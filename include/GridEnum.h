@@ -1,5 +1,4 @@
-#ifndef __GRID_ENUM_H
-#define __GRID_ENUM_H
+#pragma once
 
 #include "Vec.h"
 #include "GridDimension.h"
@@ -36,5 +35,3 @@ namespace hct
     }
 
 }; // hct
-
-#endif
