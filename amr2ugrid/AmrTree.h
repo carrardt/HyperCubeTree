@@ -7,8 +7,10 @@
 #include <assert.h>
 #include <string.h>
 
-namespace hct
+namespace Amr2Ugrid
 {
+
+	using namespace hct;
 
   struct TreeNode
   {
@@ -137,7 +139,7 @@ namespace hct
 		for(; depth<cellDepth; depth++)
 		{
 			AmrCellSize<T,D> cellSize = levelSize[depth+1];
-			Grid<D> grid = levelInfo[depth].grid;
+			GridDimension<D> grid = levelInfo[depth].grid;
 			Vec<unsigned int,D> cellPos = ( cellCenter - origin ) / cellSize ;
 			unsigned int branch = grid.branch( cellPos );
 			origin += ( cellSize * cellPos );

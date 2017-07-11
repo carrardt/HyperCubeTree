@@ -17,7 +17,7 @@
 #include "PathBits.h"
 Amr2Ugrid::MeshConnectivity<3> mesh;
 Amr2Ugrid::MeshGeometry<float,3> geom;
-hct::AmrLevels<float,3> levels;
+Amr2Ugrid::AmrLevels<float,3> levels;
 int* cellNode = 0;
 int* cellDepth = 0;
 hct::Vec<float,3>* cellCenter = 0;
@@ -44,7 +44,7 @@ namespace Amr2Ugrid
   {
     enum { D = _D };
     using PointIds = hct::PointIds<D>;
-    using LevelInfo = hct::LevelInfo<D>;
+    using LevelInfo = Amr2Ugrid::LevelInfo<D>;
     using AmrConnect = Amr2Ugrid::AmrConnect<D>;
 
     inline AmrSidePoints() : sidePoints(0), pointIds(0), nPointIds(0), sidePointArray(0) {}

@@ -37,7 +37,7 @@ struct TestObj
 
 int main()
 {
-  Grid<3> grid;
+  GridDimension<3> grid;
   cout<<"Grid (3 values) ? "; cout.flush();
   Input<3>::getUIVec(grid);
   cout<<"Enumeration of "; grid.toStream(cout); cout<<endl;

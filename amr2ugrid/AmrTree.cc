@@ -6,7 +6,7 @@
 #include <fstream>
 using namespace std;
 
-using namespace hct;
+using namespace Amr2Ugrid;
 
 int main(int argc, char* argv[])
 {

@@ -3,10 +3,10 @@
 
 #include "Vec.h"
 
-#define SQRT2 1.4142135623730951
-
 namespace hct
 {
+	static constexpr double SQRT2 = 1.4142135623730951;
+	
   /*---------------------------------------------------------
     description de la taille d'un hypercube de dimension D
     ---------------------------------------------------------*/

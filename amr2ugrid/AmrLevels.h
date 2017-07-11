@@ -3,26 +3,19 @@
 
 #include "Vec.h"
 #include "AmrCellSize.h"
+#include "GridDimension.h"
 
 #include <map>
 
-namespace hct
+namespace Amr2Ugrid
 {
 
-  template<unsigned int D>
-    struct Grid : public Vec<unsigned int,D>
-    {
-      inline Grid() : Vec<unsigned int,D>(1) {}
-      inline Grid(const Vec<unsigned int,D>& v) : Vec<unsigned int,D>(v) {}
-      inline unsigned int gridSize() const { return this->reduce_mul(); }
-      inline unsigned int branch( const Vec<unsigned int,D>& pos ) const { return this->gridIndex(pos); }
-      inline Grid& operator = (const Vec<unsigned int,D>& v) { this->Vec<unsigned int,D>::operator = (v); return *this; }
-    };
+	using namespace hct;
 
   template<unsigned int D>
     struct LevelInfo
     {
-      Grid<D> grid;
+      GridDimension<D> grid;
       int depth;
       int nCells;
       inline LevelInfo() : grid(), depth(-1), nCells(0) {}
@@ -32,8 +25,8 @@ namespace hct
     struct AmrLevels
     {
 		using AmrCellSize = hct::AmrCellSize<T,D>;
-        using Grid = hct::Grid<D>;
-		using LevelInfo = hct::LevelInfo<D> ;
+        using Grid = hct::GridDimension<D>;
+		using LevelInfo = Amr2Ugrid::LevelInfo<D> ;
 
       typedef std::map<AmrCellSize,LevelInfo> LevelMap;     
       typedef typename LevelMap::iterator LevelMapIterator;
