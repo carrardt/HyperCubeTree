@@ -25,6 +25,18 @@ namespace hct
 			assert(level < m_level_subdivisions.size());
 			return m_level_subdivisions[level];
 		}
+
+		template<typename StreamT>
+		inline StreamT& toStream(StreamT & out)
+		{
+			size_t i = 0;
+			for (GridDimension<D> g : m_level_subdivisions)
+			{
+				out << "subdivision " << i << " : "; g.toStream(out); out << '\n';
+			}
+			return out;
+		}
+
 	private:
 		std::vector< GridDimension<D> > m_level_subdivisions;
 	};

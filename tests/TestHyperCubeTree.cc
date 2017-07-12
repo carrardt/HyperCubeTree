@@ -22,5 +22,22 @@ int main()
 	hct::TreeLevelArray<double> cellValues;
 	tree.addArray(&cellValues);
 
+	tree.toStream(std::cout);
+
+	// rafiner la racine
+	std::cout << "subdivide root\n";
+	tree.refine(tree.rootCell());
+
+	tree.toStream(std::cout);
+
+	// rafiner entierement le premier niveau après la racine
+	std::cout << "subdivide 2nd level cells\n";
+	size_t nbRootChildren = subdivisions.getLevelSubdivision(0).gridSize();
+	for (size_t i = 0; i < nbRootChildren; i++)
+	{
+		tree.refine(tree.child(tree.rootCell(),i));
+	}
+	tree.toStream(std::cout);
+
 	return 0;
 }

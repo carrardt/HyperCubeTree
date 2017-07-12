@@ -3,6 +3,7 @@
 #include "HyperCubeTreeCell.h"
 #include "TreeLevelStorage.h"
 #include "GridDimension.h"
+#include "Vec.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -72,7 +73,53 @@ namespace hct
 			m_storage.addArray(a);
 		}
 
-		static inline constexpr HyperCubeTreeCell rootCell() { return HyperCubeTreeCell(); }
+		inline bool isLeaf(HyperCubeTreeCell cell) const
+		{
+			return m_cell_child_index[cell] < 0;
+		}
+
+		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, size_t childIndex)
+		{
+			assert(!isLeaf(cell));
+			assert((cell.m_level + 1) < m_storage.getNumberOfLevels());
+			assert((m_cell_child_index[cell] + childIndex) < m_storage.getLevelSize(level + 1));
+			return HyperCubeTreeCell(cell.m_level + 1, m_cell_child_index[cell] + childIndex);
+		}
+
+		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, Vec<unsigned int, D> childLocation )
+		{
+			assert( cell.m_level < m_subdivision_scheme.getNumberOfLevelSubdivisions() );
+			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
+			assert((childLocation < grid).reduce_and());
+			return child(cell, grid.branch(childLocation));
+		}
+
+		inline void refine(HyperCubeTreeCell cell)
+		{
+			assert(isLeaf(cell));
+			assert(cell.m_level < m_subdivision_scheme.getNumberOfLevelSubdivisions());
+			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
+			size_t childStartIndex = m_storage.getLevelSize(cell.m_level + 1);
+			m_storage.resize(cell.m_level + 1, childStartIndex + grid.gridSize());
+			m_cell_child_index[cell] = childStartIndex;
+		}
+
+		/*
+		inline void coarsen(HyperCubeTreeCell cell)
+		{
+			...
+		}
+		*/
+
+		template<typename StreamT>
+		inline StreamT& toStream(StreamT & out)
+		{
+			m_subdivision_scheme.toStream(out);
+			out << "root's child index : " << m_cell_child_index[rootCell()] << '\n';
+			return m_storage.toStream(out);
+		}
+
+		static inline constexpr HyperCubeTreeCell rootCell() { return HyperCubeTreeCell(0,0); }
 
 	private:
 

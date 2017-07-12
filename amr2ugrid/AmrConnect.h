@@ -7,6 +7,7 @@
 #include "Nbh.h"
 #include "Vec.h"
 #include "GridEnum.h"
+#include "GridDimension.h"
 
 namespace Amr2Ugrid
 {
@@ -95,7 +96,7 @@ namespace Amr2Ugrid
 	      }
 	    else // je recupere le fils du noeud parent a creuser a la coordonée indiquée
 	      {
-		int branch = grid.gridIndex(nbhCoord); // 'gridIndex' est un synonime pour 'branch'
+		int branch = hct::GridDimension<D>(grid).branch(nbhCoord); 
 		int snode = self.tree.subNode(parent.value.level, parent.value.node, branch);
 		child.value.level = parent.value.level +1;
 		child.value.node = snode; //snode peut etre vide (-1): le parent n'est pas une feuille mais a un fils nul.

@@ -21,7 +21,6 @@ namespace hct
 		static inline bool div(const bool a, const bool b) { return false; }
 	};
 
-
 	template <typename T, unsigned int D>
 	struct Vec;
 
@@ -41,16 +40,18 @@ namespace hct
 
 		inline Vec reverse() const { return Vec(); }
 
+		template<typename FuncT>
+		inline void apply(FuncT f) {}
+
 		inline T reduce_mul() const { return (T)1; }
 		inline T reduce_add() const { return (T)0; }
+
 #define REDUCE_BOOL(func) inline bool reduce_##func() const { return false; }
 		REDUCE_BOOL(isnan);
 		REDUCE_BOOL(isinf);
 		REDUCE_BOOL(isfinite);
 		REDUCE_BOOL(isnormal);
 #undef REDUCE_BOOL
-
-		template<typename T2> inline T gridIndex(Vec<T2, 0>) const { return (T)0; }
 
 		template<typename T2> inline Vec min(Vec<T2, 0>) const { return Vec(); }
 		template<typename T2> inline Vec max(Vec<T2, 0>) const { return Vec(); }
@@ -163,11 +164,20 @@ namespace hct
 			return Reverse<T, D, D>::reverse(*this);
 		}
 
+		template<typename FuncT>
+		inline void apply(FuncT f)
+		{
+			val = f(val);
+			Vec<T, D - 1>::apply(f);
+		}
+
 		// FIXME: available operators (and reduction functions) should be conditioned to the type of T (bool, numeric, integer, floating point, etc.)
 
 		// fonctions de reduction
 		inline T reduce_mul() const { return vec_operation_helper<T>::mul( val , Vec<T, D - 1>::reduce_mul() ); }
 		inline T reduce_add() const { return vec_operation_helper<T>::add( val , Vec<T, D - 1>::reduce_add() ); }
+		inline bool reduce_and() const { return (static_cast<bool>(val) && Vec<T, D - 1>::reduce_and()); }
+		inline bool reduce_or() const { return (static_cast<bool>(val) || Vec<T, D - 1>::reduce_and()); }
 
 		// FIXME: not correct !! at least for isfinite, 'and' should be used instead of 'or'
 #define REDUCE_BOOL(func) inline bool reduce_##func() const { return func(val) ||  Vec<T,D-1>::reduce_##func(); }
@@ -176,9 +186,6 @@ namespace hct
 		REDUCE_BOOL(isfinite);
 		REDUCE_BOOL(isnormal);
 #undef REDUCE_BOOL
-
-		// fonctions pour gerer les index dans les grilles regulieres
-		template<typename T2> inline T gridIndex(const Vec<T2, D>& pos) const { return pos.val * Vec<T, D - 1>::reduce_mul() + Vec<T, D - 1>::gridIndex(pos); }
 
 		// operations algebriques
 		template<typename T2> inline T dot(const Vec<T2, D>& op) const { return (T)((val*op.val) + Vec<T, D - 1>::dot(op)); }

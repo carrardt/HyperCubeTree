@@ -3,6 +3,7 @@
 
 #include "Vec.h"
 #include "PointIds.h"
+#include "GridDimension.h"
 
 namespace Amr2Ugrid
 {
@@ -15,7 +16,7 @@ namespace Amr2Ugrid
     static inline void connect( PointIds<D>& parentIds, PointIds<D>* childIds, const hct::Vec<unsigned int,D>& grid, hct::Vec<unsigned int,D> coord)
     {
       int point = Point::Reverse::BITFIELD;
-      int branch = grid.gridIndex( coord.reverse() );
+      int branch = GridDimension<D>(grid).branch( coord.reverse() );
       int pid = parentIds[point];
       int cid = childIds[branch][point];
       if( pid < cid )

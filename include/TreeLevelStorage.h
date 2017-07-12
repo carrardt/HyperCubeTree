@@ -102,6 +102,12 @@ namespace hct
 				for (auto a : m_level_arrays) { a->resize(level,nElems); }
 			}
 
+			inline size_t getLevelSize(size_t level)
+			{
+				assert(level < getNumberOfLevels());
+				return m_level_sizes[level];
+			}
+
 			inline void erase(size_t level, size_t position, size_t nElems)
 			{
 				assert( level < getNumberOfLevels() );
