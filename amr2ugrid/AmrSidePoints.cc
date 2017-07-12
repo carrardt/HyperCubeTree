@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <chrono>
 using namespace std;
 using namespace Amr2Ugrid;
 using namespace hct;
@@ -144,8 +145,7 @@ int main(int argc, char* argv[])
   amrConnect.toStream(cout);
 
 #ifdef PROFILING
-   struct timeval T1;
-   gettimeofday(&T1,0);
+   auto T1 = std::chrono::high_resolution_clock::now();
 #endif
 
   AmrSidePoints<3> amrSidePoints;
@@ -160,9 +160,9 @@ int main(int argc, char* argv[])
   amrSidePoints.buildSidePointArray( tree, amrConnect );
 
 #ifdef PROFILING
-   struct timeval T2;
-   gettimeofday(&T2,0);
-   cout << "Elapsed time = " << (T2.tv_sec-T1.tv_sec)*1000.0 + (T2.tv_usec-T1.tv_usec)*0.001 << " msec"<<endl;
+  auto T2 = std::chrono::high_resolution_clock::now();
+  auto usec = std::chrono::duration_cast<std::chrono::microseconds>(T2 - T1);
+   cout << "Elapsed time = " << usec.count() <<" uSec"<<endl;
 #endif
 
 

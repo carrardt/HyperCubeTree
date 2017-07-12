@@ -122,7 +122,7 @@ namespace Amr2Ugrid
 	in.read( (char*) levelSize, sizeof(AmrCellSize)*nLevels );
       }
 
-      int nLevels;
+      size_t nLevels;
       LevelInfo* levelInfo;
       AmrCellSize* levelSize;
     };

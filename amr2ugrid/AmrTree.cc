@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 using namespace std;
 
 using namespace Amr2Ugrid;

@@ -26,10 +26,6 @@ int** nodeCellId = 0;
 std::set<int> ** sidePointSet = 0;
 #endif
 
-#ifdef PROFILING
-#include <sys/time.h>
-#endif
-
 #include "PointConnect.h"
 #include "InterLevelPointConnect.h"
 #include "SidePointInsert.h"
