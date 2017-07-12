@@ -4,33 +4,13 @@
 #include "TreeLevelStorage.h"
 #include "GridDimension.h"
 #include "Vec.h"
+#include "GridEnum.h"
 
 #include <cstddef>
 #include <cstdint>
 
 namespace hct
 {
-
-
-	/*
-		Represent a tree traversal 'iterator'. basically stores the stack of parents up to the root.
-		Note : together with a tree, this cursor enables to recreate local neighborhood if needed.
-	*/
-	template<unsigned int _D, std::size_t _MaxDepth=16>
-	class HyperCubeTreeCursor
-	{
-		static constexpr unsigned int D = _D;
-		static constexpr std::size_t MaxDepth = _MaxDepth;
-		struct StackElement
-		{
-			Vec<std::size_t, D> branch; // position among siblings (relative to parent)
-			std::size_t level;
-			std::size_t index;
-		};
-		StackElement m_stack[MaxDepth];
-		std::size_t m_depth;
-	};
-
 	/*!
 	 level 0 corresponds to the single root cell
 	 at each level, m_cell_child_index holds the first index where to find child locations in the next level.
@@ -58,6 +38,7 @@ namespace hct
 	public:
 		using SubdivisionSchemeT = _SubdivisionSchemeT;
 		static constexpr unsigned int D = _D;
+		using GridLocation = Vec<unsigned int, D>;
 
 		inline HyperCubeTree( SubdivisionSchemeT subdiv )
 			: m_subdivision_scheme(subdiv)
@@ -82,11 +63,11 @@ namespace hct
 		{
 			assert(!isLeaf(cell));
 			assert((cell.m_level + 1) < m_storage.getNumberOfLevels());
-			assert((m_cell_child_index[cell] + childIndex) < m_storage.getLevelSize(level + 1));
+			assert((m_cell_child_index[cell] + childIndex) < m_storage.getLevelSize(cell.m_level + 1));
 			return HyperCubeTreeCell(cell.m_level + 1, m_cell_child_index[cell] + childIndex);
 		}
 
-		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, Vec<unsigned int, D> childLocation )
+		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, GridLocation childLocation )
 		{
 			assert( cell.m_level < m_subdivision_scheme.getNumberOfLevelSubdivisions() );
 			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
@@ -101,15 +82,32 @@ namespace hct
 			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
 			size_t childStartIndex = m_storage.getLevelSize(cell.m_level + 1);
 			m_storage.resize(cell.m_level + 1, childStartIndex + grid.gridSize());
+			... remplir avec des -1
 			m_cell_child_index[cell] = childStartIndex;
 		}
 
-		/*
-		inline void coarsen(HyperCubeTreeCell cell)
+		struct ChildFetchOperator
 		{
-			...
+			inline HyperCubeTreeCell operator () (HyperCubeTree& tree, HyperCubeTreeCell cell, GridLocation childLocation)
+			{
+				return tree.child(cell, childLocation);
+			}
+		};
+
+		template<typename CellFuncT, typename CellCursorT=HyperCubeTreeCell, typename DigOperatorT=ChildFetchOperator>
+		inline void preorderParseCells(CellFuncT f, DigOperatorT dig = DigOperatorT(), CellCursorT cursor = CellCursorT() )
+		{
+			f(cursor);
+			if (!isLeaf(cursor))
+			{
+				GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cursor.m_level);
+				ForEachGridLocation(grid, [&](GridLocation loc)
+					{
+						preorderParseCells( f, dig , dig(*this, cursor, loc) );
+					}
+				);
+			}
 		}
-		*/
 
 		template<typename StreamT>
 		inline StreamT& toStream(StreamT & out)

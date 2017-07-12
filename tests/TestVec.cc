@@ -1,5 +1,6 @@
 #include "Vec.h"
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 using namespace hct;
@@ -27,5 +28,6 @@ int main()
   cout<<"min( ("<<a<<") , ("<<b<<") ) = "<<a.min(b)<<endl;
   cout<<"reduce_mul("<<b<<") = "<<b.reduce_mul()<<endl;
   cout<<"reverse("<<b<<") = "<<b.reverse()<<endl;
+  cout << "map<square>("<<b<<") = " << b.map( [](double x) -> double {return x*x; } ) << endl;
   return 0;
 }

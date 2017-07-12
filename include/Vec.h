@@ -42,9 +42,13 @@ namespace hct
 
 		template<typename FuncT>
 		inline void apply(FuncT f) {}
+		template<typename FuncT>
+		inline Vec map(FuncT f) const { return Vec(); }
 
 		inline T reduce_mul() const { return (T)1; }
 		inline T reduce_add() const { return (T)0; }
+		inline bool reduce_and() const { return true; }
+		inline bool reduce_or() const { return false; }
 
 #define REDUCE_BOOL(func) inline bool reduce_##func() const { return false; }
 		REDUCE_BOOL(isnan);
@@ -169,6 +173,12 @@ namespace hct
 		{
 			val = f(val);
 			Vec<T, D - 1>::apply(f);
+		}
+
+		template<typename FuncT>
+		inline Vec map(FuncT f) const
+		{
+			return Vec( f(val) , Vec<T, D - 1>::map(f) );
 		}
 
 		// FIXME: available operators (and reduction functions) should be conditioned to the type of T (bool, numeric, integer, floating point, etc.)
