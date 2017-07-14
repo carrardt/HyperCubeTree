@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vec.h"
+#include <cmath>
 
 namespace hct
 {
