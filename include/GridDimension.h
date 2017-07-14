@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vec.h"
+#include <initializer_list>
 
 namespace hct
 {
@@ -12,6 +13,8 @@ namespace hct
 		static constexpr unsigned int D = 1;
 		inline GridDimension() : Vec<unsigned int, D>(1) {}
 		inline GridDimension(const Vec<unsigned int, D>& v) : Vec<unsigned int, D>(v) {}
+		inline GridDimension(std::initializer_list<unsigned int> l) : Vec<unsigned int, D>(l) {}
+
 		inline size_t branch(const Vec<unsigned int, D>& pos) const
 		{
 			return pos.val;

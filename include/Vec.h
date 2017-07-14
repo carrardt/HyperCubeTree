@@ -2,6 +2,7 @@
 #define __AMR_VEC_H
 
 #include <math.h>
+#include <initializer_list>
 
 namespace hct
 {
@@ -32,6 +33,7 @@ namespace hct
 		inline Vec() {}
 		inline Vec(T) {}
 		template<typename T2> inline Vec(Vec<T2, 0>) {}
+		template<typename T2> inline Vec(const T2*) {}
 
 		template<typename T2> inline void fromArray(const T2*) const {}
 
@@ -45,8 +47,9 @@ namespace hct
 		template<typename FuncT>
 		inline Vec map(FuncT f) const { return Vec(); }
 
-		inline T reduce_mul() const { return (T)1; }
-		inline T reduce_add() const { return (T)0; }
+		// return neutral value for each operator
+		inline T reduce_mul() const { return static_cast<T>(1); }
+		inline T reduce_add() const { return static_cast<T>(0); }
 		inline bool reduce_and() const { return true; }
 		inline bool reduce_or() const { return false; }
 
@@ -105,7 +108,7 @@ namespace hct
 	};
 
 
-
+	// Reverse alogrithm : Transform Vec( x1, Vec(x2 , Vec(x3) ) ) to Vec( x3, Vec(x2 , Vec(x1) ) )
 	template<typename T, unsigned int D, unsigned int Size> struct Reverse;
 	template<typename T, unsigned int D> struct Reverse<T, D, 0>
 	{
@@ -119,10 +122,13 @@ namespace hct
 		}
 	};
 
-	template < typename T, unsigned int D >
-	struct Vec : public Vec<T, D - 1>
+	// General case, whith D>0
+	template < typename _T, unsigned int _D >
+	struct Vec : public Vec<_T, _D - 1>
 	{
-		enum { Size = D };
+		static constexpr unsigned int D = _D;
+		static constexpr unsigned int Size = _D ;
+		using T = _T;
 
 		T val;
 
@@ -140,19 +146,23 @@ namespace hct
 
 		// constructeur a partir d'un tableau d'éléments
 		template <typename T2> inline Vec(const T2* array) { this->fromArray(array); }
+		template <typename T2> inline Vec(std::initializer_list<T2> l) { this->fromArray(l.begin()); }
+
 		template <typename T2> inline void fromArray(const T2* coord)
 		{
-			val = (T)coord[D - 1]; this->Vec<T, D - 1>::fromArray(coord);
+			val = static_cast<T>( coord[D - 1] );
+			this->Vec<T, D - 1>::fromArray(coord);
 		}
 
 		// ecriture du vecteur dans un flot texte
-		template<typename StreamT> inline void toStream(StreamT& out) const
+		template<typename StreamT> inline StreamT& toStream(StreamT& out) const
 		{
 			out << val;
 			if (D > 1) {
 				out << ',';
 				Vec<T, D - 1>::toStream(out);
 			}
+			return out;
 		}
 
 		inline Vec& operator = (const Vec& src)

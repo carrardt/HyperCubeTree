@@ -102,7 +102,7 @@ namespace hct
 				for (auto a : m_level_arrays) { a->resize(level,nElems); }
 			}
 
-			inline size_t getLevelSize(size_t level)
+			inline size_t getLevelSize(size_t level) const
 			{
 				assert(level < getNumberOfLevels());
 				return m_level_sizes[level];

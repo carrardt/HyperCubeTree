@@ -11,6 +11,7 @@
 
 namespace hct
 {
+
 	/*!
 	 level 0 corresponds to the single root cell
 	 at each level, m_cell_child_index holds the first index where to find child locations in the next level.
@@ -59,7 +60,7 @@ namespace hct
 			return m_cell_child_index[cell] < 0;
 		}
 
-		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, size_t childIndex)
+		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, size_t childIndex) const
 		{
 			assert(!isLeaf(cell));
 			assert((cell.m_level + 1) < m_storage.getNumberOfLevels());
@@ -67,7 +68,7 @@ namespace hct
 			return HyperCubeTreeCell(cell.m_level + 1, m_cell_child_index[cell] + childIndex);
 		}
 
-		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, GridLocation childLocation )
+		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, GridLocation childLocation ) const
 		{
 			assert( cell.m_level < m_subdivision_scheme.getNumberOfLevelSubdivisions() );
 			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
@@ -81,21 +82,31 @@ namespace hct
 			assert(cell.m_level < m_subdivision_scheme.getNumberOfLevelSubdivisions());
 			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
 			size_t childStartIndex = m_storage.getLevelSize(cell.m_level + 1);
-			m_storage.resize(cell.m_level + 1, childStartIndex + grid.gridSize());
-			... remplir avec des -1
+			size_t nbChildren = grid.gridSize();
+			size_t childLevel = cell.m_level + 1;
+			m_storage.resize(childLevel, childStartIndex + nbChildren );
 			m_cell_child_index[cell] = childStartIndex;
+			for (size_t i = childStartIndex; i < (childStartIndex + nbChildren); i++)
+			{
+				m_cell_child_index[HyperCubeTreeCell(childLevel, i)] = -1;
+			}
 		}
 
-		struct ChildFetchOperator
+		/*!
+			All traversal cursor types must derive from this one
+			or derive from HyperCubeTreeCell and have the same constructors as this one
+		*/
+		struct HyperCubeTreeCursor : public HyperCubeTreeCell
 		{
-			inline HyperCubeTreeCell operator () (HyperCubeTree& tree, HyperCubeTreeCell cell, GridLocation childLocation)
-			{
-				return tree.child(cell, childLocation);
-			}
+			inline HyperCubeTreeCursor() {}
+			inline HyperCubeTreeCursor(HyperCubeTreeCell cell)
+				: HyperCubeTreeCell(cell) {}
+			inline HyperCubeTreeCursor(HyperCubeTree& tree, HyperCubeTreeCell parent, GridLocation childLocation)
+				: HyperCubeTreeCell(tree.child(parent, childLocation)) {}
 		};
 
-		template<typename CellFuncT, typename CellCursorT=HyperCubeTreeCell, typename DigOperatorT=ChildFetchOperator>
-		inline void preorderParseCells(CellFuncT f, DigOperatorT dig = DigOperatorT(), CellCursorT cursor = CellCursorT() )
+		template<typename CellFuncT, typename CellCursorT=HyperCubeTreeCursor>
+		inline void preorderParseCells(CellFuncT f, CellCursorT cursor = CellCursorT() )
 		{
 			f(cursor);
 			if (!isLeaf(cursor))
@@ -103,7 +114,7 @@ namespace hct
 				GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cursor.m_level);
 				ForEachGridLocation(grid, [&](GridLocation loc)
 					{
-						preorderParseCells( f, dig , dig(*this, cursor, loc) );
+						preorderParseCells( f, CellCursorT(*this, cursor, loc) );
 					}
 				);
 			}

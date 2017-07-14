@@ -2,6 +2,7 @@
 
 #include "GridDimension.h"
 #include <vector>
+#include <initializer_list>
 
 namespace hct
 {
@@ -10,6 +11,10 @@ namespace hct
 	{
 		static constexpr unsigned int D = _D;
 	public:
+		inline void addLevelSubdivision(std::initializer_list<unsigned int> l)
+		{
+			addLevelSubdivision(GridDimension<D>(l));
+		}
 		inline void addLevelSubdivision(GridDimension<D> grid)
 		{
 			m_level_subdivisions.push_back(grid);
