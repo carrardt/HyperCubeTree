@@ -131,10 +131,14 @@ namespace hct
 			{
 				out << "Number of arrays : " << m_level_arrays.size() << '\n';
 				out << "Number of levels : " << m_level_sizes.size() << '\n';
+				size_t totalSize = 0;
 				for (size_t i = 0; i < getNumberOfLevels(); i++)
 				{
-					out << "\tLevel " << i << " : size = " << m_level_sizes[i] << '\n';
+					size_t levelSize = m_level_sizes[i];
+					out << "\tLevel " << i << " : size = " << levelSize << '\n';
+					totalSize += levelSize;
 				}
+				out << "Total size : " << totalSize << '\n';
 				return out;
 			}
 

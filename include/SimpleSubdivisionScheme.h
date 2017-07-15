@@ -38,6 +38,7 @@ namespace hct
 			for (GridDimension<D> g : m_level_subdivisions)
 			{
 				out << "subdivision " << i << " : "; g.toStream(out); out << '\n';
+				++i;
 			}
 			return out;
 		}

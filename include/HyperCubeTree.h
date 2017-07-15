@@ -39,6 +39,7 @@ namespace hct
 	public:
 		using SubdivisionSchemeT = _SubdivisionSchemeT;
 		static constexpr unsigned int D = _D;
+		using SubdivisionGrid = GridDimension<D>;
 		using GridLocation = Vec<unsigned int, D>;
 
 		inline HyperCubeTree( SubdivisionSchemeT subdiv )
@@ -48,6 +49,11 @@ namespace hct
 			m_storage.resize(0, 1);
 			m_storage.addArray(&m_cell_child_index);
 			m_cell_child_index[rootCell()] = -1;
+		}
+
+		inline size_t getNumberOfLevels() const
+		{
+			return m_storage.getNumberOfLevels();
 		}
 
 		inline void addArray(ITreeLevelArray* a)
@@ -92,6 +98,11 @@ namespace hct
 			}
 		}
 
+		inline bool isRefinable(HyperCubeTreeCell cell) const
+		{
+			return isLeaf(cell) && (cell.level() < getNumberOfLevels());
+		}
+
 		/*!
 			All traversal cursor types must derive from this one
 			or derive from HyperCubeTreeCell and have the same constructors as this one
@@ -101,8 +112,8 @@ namespace hct
 			inline HyperCubeTreeCursor() {}
 			inline HyperCubeTreeCursor(HyperCubeTreeCell cell)
 				: HyperCubeTreeCell(cell) {}
-			inline HyperCubeTreeCursor(HyperCubeTree& tree, HyperCubeTreeCell parent, GridLocation childLocation)
-				: HyperCubeTreeCell(tree.child(parent, childLocation)) {}
+			inline HyperCubeTreeCursor(HyperCubeTree& tree, HyperCubeTreeCell parent, SubdivisionGrid grid, GridLocation childLocation)
+				: HyperCubeTreeCell(tree.child(parent,grid.branch(childLocation))) {}
 		};
 
 		template<typename CellFuncT, typename CellCursorT=HyperCubeTreeCursor>
@@ -111,10 +122,10 @@ namespace hct
 			f(cursor);
 			if (!isLeaf(cursor))
 			{
-				GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cursor.m_level);
+				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.m_level);
 				ForEachGridLocation(grid, [&](GridLocation loc)
 					{
-						preorderParseCells( f, CellCursorT(*this, cursor, loc) );
+						preorderParseCells( f, CellCursorT(*this, cursor, grid, loc) );
 					}
 				);
 			}

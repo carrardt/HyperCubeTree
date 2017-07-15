@@ -31,7 +31,7 @@ namespace hct
 		enum { Size = 0 };
 
 		inline Vec() {}
-		inline Vec(T) {}
+		template<typename T2> inline Vec(T2) {}
 		template<typename T2> inline Vec(Vec<T2, 0>) {}
 		template<typename T2> inline Vec(const T2*) {}
 
@@ -147,6 +147,11 @@ namespace hct
 		// constructeur a partir d'un tableau d'éléments
 		template <typename T2> inline Vec(const T2* array) { this->fromArray(array); }
 		template <typename T2> inline Vec(std::initializer_list<T2> l) { this->fromArray(l.begin()); }
+
+		static inline Vec<T,D> fromBitfield(size_t n)
+		{
+			return Vec<T,D> ( static_cast<T>( (n >> (D - 1)) & 1), Vec<T, D - 1>(n));
+		}
 
 		template <typename T2> inline void fromArray(const T2* coord)
 		{
@@ -270,6 +275,14 @@ namespace hct
 	typedef Vec<unsigned int, 2> Vec2ui;
 	typedef Vec<unsigned int, 3> Vec3ui;
 	typedef Vec<unsigned int, 4> Vec4ui;
+
+	template<unsigned int D>
+	static inline
+	Vec<int64_t, D>
+	bitfield_vec(uint64_t n)
+	{
+		return Vec<int64_t, D>::fromBitfield(n);
+	}
 
 }; // namespace hct
 
