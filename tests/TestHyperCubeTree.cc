@@ -40,11 +40,11 @@ int main()
 	tree.toStream(std::cout);
 
 	std::cout << "initialize cellValues" << std::endl;
-	tree.preorderParseCells([&cellValues](HyperCubeTreeCell cell) { cellValues[cell] = cell.m_level*1000000.0 + cell.m_index; });
+	tree.preorderParseCells([&cellValues](hct::HyperCubeTreeCell cell) { cellValues[cell] = cell.m_level*1000000.0 + cell.m_index; });
 
 	double maxval = 0.0;
 	std::cout << "read cellValues" << std::endl;
-	tree.preorderParseCells([&maxval,&cellValues](HyperCubeTreeCell cell) { maxval = std::max(maxval,cellValues[cell]); });
+	tree.preorderParseCells([&maxval,&cellValues](hct::HyperCubeTreeCell cell) { maxval = std::max(maxval,cellValues[cell]); });
 	std::cout << "max value = " << maxval << std::endl;
 
 	return 0;

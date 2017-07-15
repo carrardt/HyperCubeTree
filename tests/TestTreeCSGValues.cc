@@ -50,9 +50,15 @@ using Tree = hct::HyperCubeTree< 3, SubdivisionScheme >;
 using TreeCursor = TreeCursorWithPosition<Tree>;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
 
-void testTreeCSGRefine(SubdivisionScheme subdivisions)
+
+int main()
 {
-	std::cout << "-----------------------\n";
+	SubdivisionScheme subdivisions;
+	subdivisions.addLevelSubdivision({ 4,4,20 });
+	subdivisions.addLevelSubdivision({ 3,3,3 });
+	subdivisions.addLevelSubdivision({ 3,3,3 });
+	subdivisions.addLevelSubdivision({ 3,3,3 });
+	subdivisions.addLevelSubdivision( {3,3,3} );
 
 	Tree tree(subdivisions);
 	tree.refine(tree.rootCell());
@@ -89,7 +95,7 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 			{
 				auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
 				Vec3d p = cursor.m_origin + vertex * cursor.m_size;
-				if ( shape(p) > 0.0) { allInside = false; }
+				if (shape(p) > 0.0) { allInside = false; }
 				else { allOutside = false; }
 			}
 			if (!allInside && !allOutside)
@@ -100,40 +106,10 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 	}
 	, cursor);
 
+	hct::TreeLevelArray<double> cellValues;
+	tree.addArray(&cellValues);
+
 	tree.toStream(std::cout);
-}
-
-int main()
-{
-	{
-		SubdivisionScheme subdivisions;
-		subdivisions.addLevelSubdivision({ 4,4,20 });
-		subdivisions.addLevelSubdivision({ 3,3,3 });
-		subdivisions.addLevelSubdivision({ 3,3,3 });
-		subdivisions.addLevelSubdivision({ 3,3,3 });
-		subdivisions.addLevelSubdivision( {3,3,3} );
-		testTreeCSGRefine(subdivisions);
-	}
-
-	{
-		SubdivisionScheme subdivisions;
-		subdivisions.addLevelSubdivision({ 4,4,16 });
-		subdivisions.addLevelSubdivision({ 2,2,2 });
-		subdivisions.addLevelSubdivision({ 2,2,2 });
-		subdivisions.addLevelSubdivision({ 2,2,2 });
-		subdivisions.addLevelSubdivision({ 2,2,2 });
-		subdivisions.addLevelSubdivision({ 2,2,2 });
-		subdivisions.addLevelSubdivision({ 2,2,2 });
-		testTreeCSGRefine(subdivisions);
-	}
-
-	{
-		SubdivisionScheme subdivisions;
-		subdivisions.addLevelSubdivision({ 1,2,3 });
-		subdivisions.addLevelSubdivision({ 4,5,6 });
-		subdivisions.addLevelSubdivision({ 7,8,9 });
-		testTreeCSGRefine(subdivisions);
-	}
 
 	return 0;
 }

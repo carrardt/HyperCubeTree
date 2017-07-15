@@ -14,14 +14,23 @@ template <typename T, unsigned int D>
 
 int main()
 {
-  Vec3d a(0.5),b(2);
-  
+  Vec3d a(0.5) , b(2);
+  Vec3d c(0.33);
+  Vec3i d(2);
+  Vec3b e({true,false,true});
+
   a = Vec3i(1);
 
   a+=b*3;
 
   b = Vec3d( 6.9, Vec2d(7.1) );
 
+  // vector type promotion test int*double=>double, bool*double=>double
+  cout << d << " * " << c << " = " << (d*c) << endl;
+  cout << c << " * " << d << " = " << (c*d) << endl;
+  cout << c << " * " << e << " = " << (c*e) << endl;
+
+  // other tests
   cout<<"sizeof(Vec3d)="<<sizeof(Vec3d)<<endl;
   cout<<"sizeof(Vec3i)="<<sizeof(Vec3i)<<endl;
   cout<<a<<" < "<<b<<" = "<<(a<b)<<endl;

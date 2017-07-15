@@ -1,26 +1,33 @@
 #ifndef __AMR_VEC_H
 #define __AMR_VEC_H
 
-#include <math.h>
 #include <initializer_list>
+#include <cstdint>
 
 namespace hct
 {
 
+	// a simple helper template to deal with boolean operations that are non-sense (*,/,-)
 	template<typename T> struct vec_operation_helper
 	{
-		static inline T add(const T& a, const T& b) { return a + b; }
-		static inline T sub(const T& a, const T& b) { return a - b; }
-		static inline T mul(const T& a, const T& b) { return a * b; }
-		static inline T div(const T& a, const T& b) { return a / b; }
+		static inline auto add(const T& a, const T& b) ->decltype(a+b) { return a + b; }
+		static inline auto sub(const T& a, const T& b) ->decltype(a - b) { return a - b; }
+		static inline auto mul(const T& a, const T& b) ->decltype(a * b) { return a * b; }
+		static inline auto div(const T& a, const T& b) ->decltype(a / b) { return a / b; }
 	};
 	template<> struct vec_operation_helper<bool>
 	{
 		static inline bool add(const bool a, const bool b) { return ( a || b ); }
-		static inline bool sub(const bool a, const bool b) { return false; }
-		static inline bool mul(const bool a, const bool b) { return a && b; }
-		static inline bool div(const bool a, const bool b) { return false; }
+		static inline bool sub(const bool a, const bool b) { return ( a ^ b ); }
+		static inline bool mul(const bool a, const bool b) { return ( a && b ); }
+		static inline bool div(const bool a, const bool b) { return ( a && b ); }
 	};
+
+
+	/*
+	The Vec template class is meant to represent vectors of fixed size and type.
+	They are recursively defined to fit the needs of hyper-cube neighborhood finding algorithm, mainly.
+	*/
 
 	template <typename T, unsigned int D>
 	struct Vec;
@@ -53,24 +60,25 @@ namespace hct
 		inline bool reduce_and() const { return true; }
 		inline bool reduce_or() const { return false; }
 
+/*
 #define REDUCE_BOOL(func) inline bool reduce_##func() const { return false; }
 		REDUCE_BOOL(isnan);
 		REDUCE_BOOL(isinf);
 		REDUCE_BOOL(isfinite);
 		REDUCE_BOOL(isnormal);
 #undef REDUCE_BOOL
-
+*/
 		template<typename T2> inline Vec min(Vec<T2, 0>) const { return Vec(); }
 		template<typename T2> inline Vec max(Vec<T2, 0>) const { return Vec(); }
 
 		template<typename T2> inline T dot(Vec<T2, 0>) const { return (T)0; }
 		inline T length2() const { return (T)0; }
 
-#define BINARY_VEC_OPERATOR(OP) template<typename T2> inline Vec operator OP (const Vec<T2,0> op) const { return Vec(); }
-#define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,0> operator OP (const Vec<T2,0>& op) const { return Vec<bool,0>(); }
-#define SELF_VEC_OPERATOR(OP)   template<typename T2> inline Vec operator OP (const Vec<T2,0> op) const { return Vec(); }
-#define BINARY_SCAL_OPERATOR(OP) inline Vec operator OP (const T& op) const { return Vec(); }
-#define SELF_SCAL_OPERATOR(OP)   inline Vec operator OP (const T& op) const { return Vec(); }
+#define BINARY_VEC_OPERATOR(OP) template<typename T2> inline Vec<decltype(T() OP T2()),0> operator OP (const Vec<T2,0> b) const { return Vec<decltype(T() OP T2()),0>(); }
+#define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,0> operator OP (const Vec<T2,0>& b) const { return Vec<bool,0>(); }
+#define SELF_VEC_OPERATOR(OP)   template<typename T2> inline Vec operator OP (const Vec<T2,0> b) const { return Vec(); }
+#define BINARY_SCAL_OPERATOR(OP) template<typename T2> inline Vec<decltype(T() OP T2()),0> operator OP (const T2& b) const { return Vec<decltype(T() OP T2()),0>(); }
+#define SELF_SCAL_OPERATOR(OP)   inline Vec operator OP (const T& b) const { return Vec(); }
 
 		BINARY_VEC_OPERATOR(+);
 		BINARY_VEC_OPERATOR(-);
@@ -162,11 +170,11 @@ namespace hct
 		// ecriture du vecteur dans un flot texte
 		template<typename StreamT> inline StreamT& toStream(StreamT& out) const
 		{
-			out << val;
 			if (D > 1) {
-				out << ',';
 				Vec<T, D - 1>::toStream(out);
+				out << ',';
 			}
+			out << val;
 			return out;
 		}
 
@@ -205,13 +213,14 @@ namespace hct
 		inline bool reduce_or() const { return (static_cast<bool>(val) || Vec<T, D - 1>::reduce_and()); }
 
 		// FIXME: not correct !! at least for isfinite, 'and' should be used instead of 'or'
+/*
 #define REDUCE_BOOL(func) inline bool reduce_##func() const { return func(val) ||  Vec<T,D-1>::reduce_##func(); }
 		REDUCE_BOOL(isnan);
 		REDUCE_BOOL(isinf);
 		REDUCE_BOOL(isfinite);
 		REDUCE_BOOL(isnormal);
 #undef REDUCE_BOOL
-
+*/
 		// operations algebriques
 		template<typename T2> inline T dot(const Vec<T2, D>& op) const { return (T)((val*op.val) + Vec<T, D - 1>::dot(op)); }
 		inline T length2() const { return (T)((val*val) + Vec<T, D - 1>::length2()); }
@@ -220,10 +229,20 @@ namespace hct
 		template<typename T2> inline Vec min(const Vec<T2, D>& op) const { return (val <= op.val) ? Vec(val, Vec<T, D - 1>::min(op)) : Vec(op.val, Vec<T, D - 1>::min(op)); }
 		template<typename T2> inline Vec max(const Vec<T2, D>& op) const { return (val >= op.val) ? Vec(val, Vec<T, D - 1>::max(op)) : Vec(op.val, Vec<T, D - 1>::max(op)); }
 
-#define BINARY_VEC_OPERATOR(OP) template<typename T2> inline Vec operator OP (const Vec<T2,D>& op) const { return Vec( (T)(val OP op.val), Vec<T,D-1>::operator OP (op) ); }
+#define BINARY_VEC_OPERATOR(OP) \
+	template<typename T2> inline \
+	Vec<decltype(T() OP T2()),D> \
+	operator OP (const Vec<T2,D>& b) const \
+	{ return Vec<decltype(T() OP T2()),D>( val OP b.val, Vec<T,D-1>::operator OP (b) ); }
+
+#define BINARY_SCAL_OPERATOR(OP) \
+	template<typename T2> inline \
+	Vec<decltype(T() OP T2()),D> \
+	operator OP (const T2& b) const \
+    { return Vec<decltype(T() OP T2()),D>( val OP b , Vec<T,D-1>::operator OP (b) ); }
+
 #define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,D> operator OP (const Vec<T2,D>& op) const { return Vec<bool,D>( (bool)(val OP op.val) , Vec<T,D-1>::operator OP (op) ); }
 #define SELF_VEC_OPERATOR(OP) template<typename T2> inline Vec& operator OP (const Vec<T2,D>& op) { val OP ((T) op.val) ; Vec<T,D-1>::operator OP (op); return *this; }
-#define BINARY_SCAL_OPERATOR(OP) inline Vec  operator OP (const T& op) const { return Vec( val OP op , Vec<T,D-1>::operator OP (op) ); }
 #define SELF_SCAL_OPERATOR(OP) inline Vec& operator OP (const T& op) { val OP op; Vec<T,D-1>::operator OP (op); return *this; }
 
 		BINARY_VEC_OPERATOR(+);
@@ -260,21 +279,30 @@ namespace hct
 #undef SELF_SCAL_OPERATOR
 	};
 
+	typedef Vec<double, 1> Vec1d;
 	typedef Vec<double, 2> Vec2d;
 	typedef Vec<double, 3> Vec3d;
 	typedef Vec<double, 4> Vec4d;
 
+	typedef Vec<float, 1> Vec1f;
 	typedef Vec<float, 2> Vec2f;
 	typedef Vec<float, 3> Vec3f;
 	typedef Vec<float, 4> Vec4f;
 
+	typedef Vec<int, 1> Vec1i;
 	typedef Vec<int, 2> Vec2i;
 	typedef Vec<int, 3> Vec3i;
 	typedef Vec<int, 4> Vec4i;
 
+	typedef Vec<unsigned int, 1> Vec1ui;
 	typedef Vec<unsigned int, 2> Vec2ui;
 	typedef Vec<unsigned int, 3> Vec3ui;
 	typedef Vec<unsigned int, 4> Vec4ui;
+
+	typedef Vec<bool, 1> Vec1b;
+	typedef Vec<bool, 2> Vec2b;
+	typedef Vec<bool, 3> Vec3b;
+	typedef Vec<bool, 4> Vec4b;
 
 	template<unsigned int D>
 	static inline

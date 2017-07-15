@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HyperCubeTreeCell.h"
+#include "HyperCubeTreeCursor.h"
 #include "TreeLevelStorage.h"
 #include "GridDimension.h"
 #include "Vec.h"
@@ -11,7 +12,6 @@
 
 namespace hct
 {
-
 	/*!
 	 level 0 corresponds to the single root cell
 	 at each level, m_cell_child_index holds the first index where to find child locations in the next level.
@@ -41,6 +41,7 @@ namespace hct
 		static constexpr unsigned int D = _D;
 		using SubdivisionGrid = GridDimension<D>;
 		using GridLocation = Vec<unsigned int, D>;
+		using DefaultTreeCursor = HyperCubeTreeCursor<HyperCubeTree>;
 
 		inline HyperCubeTree( SubdivisionSchemeT subdiv )
 			: m_subdivision_scheme(subdiv)
@@ -82,10 +83,14 @@ namespace hct
 			return child(cell, grid.branch(childLocation));
 		}
 
+		inline bool isRefinable(HyperCubeTreeCell cell) const
+		{
+			return isLeaf(cell) && (cell.level()+1) < getNumberOfLevels();
+		}
+
 		inline void refine(HyperCubeTreeCell cell)
 		{
-			assert(isLeaf(cell));
-			assert(cell.m_level < m_subdivision_scheme.getNumberOfLevelSubdivisions());
+			assert(isRefinable(cell));
 			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
 			size_t childStartIndex = m_storage.getLevelSize(cell.m_level + 1);
 			size_t nbChildren = grid.gridSize();
@@ -98,25 +103,7 @@ namespace hct
 			}
 		}
 
-		inline bool isRefinable(HyperCubeTreeCell cell) const
-		{
-			return isLeaf(cell) && (cell.level() < getNumberOfLevels());
-		}
-
-		/*!
-			All traversal cursor types must derive from this one
-			or derive from HyperCubeTreeCell and have the same constructors as this one
-		*/
-		struct HyperCubeTreeCursor : public HyperCubeTreeCell
-		{
-			inline HyperCubeTreeCursor() {}
-			inline HyperCubeTreeCursor(HyperCubeTreeCell cell)
-				: HyperCubeTreeCell(cell) {}
-			inline HyperCubeTreeCursor(HyperCubeTree& tree, HyperCubeTreeCell parent, SubdivisionGrid grid, GridLocation childLocation)
-				: HyperCubeTreeCell(tree.child(parent,grid.branch(childLocation))) {}
-		};
-
-		template<typename CellFuncT, typename CellCursorT=HyperCubeTreeCursor>
+		template<typename CellFuncT, typename CellCursorT=DefaultTreeCursor>
 		inline void preorderParseCells(CellFuncT f, CellCursorT cursor = CellCursorT() )
 		{
 			f(cursor);
