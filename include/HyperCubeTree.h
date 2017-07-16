@@ -91,7 +91,7 @@ namespace hct
 		inline void refine(HyperCubeTreeCell cell)
 		{
 			assert(isRefinable(cell));
-			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
+			SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
 			size_t childStartIndex = m_storage.getLevelSize(cell.m_level + 1);
 			size_t nbChildren = grid.gridSize();
 			size_t childLevel = cell.m_level + 1;

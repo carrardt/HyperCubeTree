@@ -7,7 +7,11 @@
 #include <algorithm>
 #include <initializer_list>
 #include <cmath>
+#include <chrono>
 
+/*
+	A tree traversal cursor adding information about position and size of the traversed cell.
+*/
 template<typename _Tree>
 struct TreeCursorWithPosition : public hct::HyperCubeTreeCursor<_Tree>
 {
@@ -77,6 +81,8 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 		std::cout << "level " << (i + 1) << " : size = " << cellSize << std::endl;
 	}
 
+	auto T1 = std::chrono::high_resolution_clock::now();
+
 	tree.preorderParseCells(
 		[shape, &tree](TreeCursor cursor)
 	{
@@ -100,7 +106,11 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 	}
 	, cursor);
 
+	auto T2 = std::chrono::high_resolution_clock::now();
+	auto usec = std::chrono::duration_cast<std::chrono::microseconds>(T2 - T1);
+
 	tree.toStream(std::cout);
+	std::cout << "Refinment time = " << usec.count() << " uSec" << std::endl;
 }
 
 int main()
@@ -132,6 +142,19 @@ int main()
 		subdivisions.addLevelSubdivision({ 1,2,3 });
 		subdivisions.addLevelSubdivision({ 4,5,6 });
 		subdivisions.addLevelSubdivision({ 7,8,9 });
+		testTreeCSGRefine(subdivisions);
+	}
+
+	{
+		// TODO: test another subdivision type, like a compile time constant subdivision scheme.
+		SubdivisionScheme subdivisions;
+		subdivisions.addLevelSubdivision({ 5,5,21 });
+		subdivisions.addLevelSubdivision({ 3,3,3 });
+		subdivisions.addLevelSubdivision({ 3,3,3 });
+		subdivisions.addLevelSubdivision({ 3,3,3 });
+		subdivisions.addLevelSubdivision({ 3,3,3 });
+		subdivisions.addLevelSubdivision({ 3,3,3 });
+		subdivisions.addLevelSubdivision({ 3,3,3 });
 		testTreeCSGRefine(subdivisions);
 	}
 

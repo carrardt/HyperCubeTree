@@ -109,6 +109,9 @@ int main()
 	hct::TreeLevelArray<double> cellValues;
 	tree.addArray(&cellValues);
 
+	hct::TreeLevelArray<int> cellOwner;
+	tree.addArray(&cellOwner);
+
 	tree.toStream(std::cout);
 
 	return 0;
