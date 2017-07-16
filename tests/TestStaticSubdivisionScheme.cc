@@ -26,4 +26,14 @@ int main()
 	std::cout << "Set(Grid0,Grid1,Grid2) valid = " << hct::StaticGridDimSet< Grid0, Grid1, Grid2 >::is_valid << std::endl;
 	std::cout << "Set(Grid0,Grid1,Grid2,Grid3) valid = " << hct::StaticGridDimSet< Grid0, Grid1, Grid2, Grid3 >::is_valid << std::endl;
 	std::cout << "Set(Grid3,Grid0) valid = " << hct::StaticGridDimSet< Grid3, Grid0 >::is_valid << std::endl;
+
+	using InitialSubdiv = hct::StaticSubdivisionScheme< 1, 4, 4, 20 >;
+	using Subdiv = hct::StaticSubdivisionScheme< 4, 3, 3, 3 >;
+	InitialSubdiv init_subdiv;
+	init_subdiv.toStream(std::cout);
+	Subdiv subdiv;
+	subdiv.toStream(std::cout);
+
+	hct::StaticSubdivisionSchemeCombo< InitialSubdiv, Subdiv > finalSubdivCheme;
+	finalSubdivCheme.toStream(std::cout);
 }

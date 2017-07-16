@@ -1,5 +1,7 @@
 #include "HyperCubeTree.h"
+#include "HyperCubeTreeLocatedCursor.h"
 #include "SimpleSubdivisionScheme.h"
+#include "StaticSubdivisionScheme.h"
 #include "GridDimension.h"
 #include "csg.h"
 
@@ -9,45 +11,15 @@
 #include <cmath>
 #include <chrono>
 
-/*
-	A tree traversal cursor adding information about position and size of the traversed cell.
-*/
-template<typename _Tree>
-struct TreeCursorWithPosition : public hct::HyperCubeTreeCursor<_Tree>
-{
-	using SuperClass = hct::HyperCubeTreeCursor<_Tree>;
-	using Tree = _Tree;
-	static constexpr unsigned int D = Tree::D;
-	using VecT = hct::Vec<double,D>;
-	using SubdivisionGrid = typename Tree::SubdivisionGrid;
-	using GridLocation = typename Tree::GridLocation;
-
-	// initialization constructors
-	inline TreeCursorWithPosition(hct::Vec<double,D> domainSize , hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell() )
-		: SuperClass(cell)
-		, m_origin(0.0)
-		, m_size(domainSize) {}
-
-	// recursion constructor
-	inline TreeCursorWithPosition(Tree& tree, TreeCursorWithPosition parent, SubdivisionGrid grid, GridLocation childLocation)
-		: SuperClass(tree, parent, grid, childLocation)
-	{
-		m_size = parent.m_size / grid;
-		m_origin = parent.m_origin + childLocation * m_size;
-	}
-
-	VecT m_origin;
-	VecT m_size;
-};
-
 using hct::Vec3d;
-using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
-using Tree = hct::HyperCubeTree< 3, SubdivisionScheme >;
-using TreeCursor = TreeCursorWithPosition<Tree>;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
 
-void testTreeCSGRefine(SubdivisionScheme subdivisions)
+template<typename SubdivisionSchemeT>
+static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 {
+	using Tree = hct::HyperCubeTree< 3, SubdivisionSchemeT >;
+	using TreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
+
 	std::cout << "-----------------------\n";
 
 	Tree tree(subdivisions);
@@ -108,7 +80,7 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 int main()
 {
 	{
-		SubdivisionScheme subdivisions;
+		hct::SimpleSubdivisionScheme<3> subdivisions;
 		subdivisions.addLevelSubdivision({ 4,4,20 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
@@ -118,7 +90,7 @@ int main()
 	}
 
 	{
-		SubdivisionScheme subdivisions;
+		hct::SimpleSubdivisionScheme<3> subdivisions;
 		subdivisions.addLevelSubdivision({ 4,4,16 });
 		subdivisions.addLevelSubdivision({ 2,2,2 });
 		subdivisions.addLevelSubdivision({ 2,2,2 });
@@ -130,7 +102,7 @@ int main()
 	}
 
 	{
-		SubdivisionScheme subdivisions;
+		hct::SimpleSubdivisionScheme<3> subdivisions;
 		subdivisions.addLevelSubdivision({ 1,2,3 });
 		subdivisions.addLevelSubdivision({ 4,5,6 });
 		subdivisions.addLevelSubdivision({ 7,8,9 });
@@ -138,8 +110,7 @@ int main()
 	}
 
 	{
-		// TODO: test another subdivision type, like a compile time constant subdivision scheme.
-		SubdivisionScheme subdivisions;
+		hct::SimpleSubdivisionScheme<3> subdivisions;
 		subdivisions.addLevelSubdivision({ 5,5,21 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
@@ -148,6 +119,13 @@ int main()
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		testTreeCSGRefine(subdivisions);
+	}
+
+	{
+		using InitialSubdiv = hct::StaticSubdivisionScheme< 1,   5, 5, 21 >;
+		using Subdiv = hct::StaticSubdivisionScheme< 6,   3, 3, 3 >;
+		hct::StaticSubdivisionSchemeCombo< InitialSubdiv, Subdiv > staticSubdivCheme;
+		testTreeCSGRefine(staticSubdivCheme);
 	}
 
 	return 0;

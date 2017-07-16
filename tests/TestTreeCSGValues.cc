@@ -2,52 +2,17 @@
 #include "SimpleSubdivisionScheme.h"
 #include "GridDimension.h"
 #include "csg.h"
+#include "HyperCubeTreeLocatedCursor.h"
 
 #include <iostream>
 #include <algorithm>
 #include <initializer_list>
 #include <cmath>
 
-template<typename _Tree>
-struct TreeCursorWithPosition : public hct::HyperCubeTreeCursor<_Tree>
-{
-	using SuperClass = hct::HyperCubeTreeCursor<_Tree>;
-	using Tree = _Tree;
-	static constexpr unsigned int D = Tree::D;
-	using VecT = hct::Vec<double,D>;
-	using SubdivisionGrid = typename Tree::SubdivisionGrid;
-	using GridLocation = typename Tree::GridLocation;
-
-	// initialization constructors
-	inline TreeCursorWithPosition()
-		: m_origin(0.0)
-		, m_size(1.0) {}
-	inline TreeCursorWithPosition(hct::Vec<double,D> domainSize)
-		: m_origin(0.0)
-		, m_size(domainSize) {}
-
-	// copy constructor
-	inline TreeCursorWithPosition(const TreeCursorWithPosition& cursor)
-		: SuperClass(cursor)
-		, m_origin(cursor.m_origin)
-		, m_size(cursor.m_size) {}
-
-	// recursion constructor
-	inline TreeCursorWithPosition(Tree& tree, TreeCursorWithPosition parent, SubdivisionGrid grid, GridLocation childLocation)
-		: SuperClass(tree, parent, grid, childLocation)
-	{
-		m_size = parent.m_size / grid;
-		m_origin = parent.m_origin + childLocation * m_size;
-	}
-
-	VecT m_origin;
-	VecT m_size;
-};
-
 using hct::Vec3d;
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 using Tree = hct::HyperCubeTree< 3, SubdivisionScheme >;
-using TreeCursor = TreeCursorWithPosition<Tree>;
+using TreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
 
 
@@ -85,32 +50,51 @@ int main()
 
 	tree.preorderParseCells(
 		[shape, &tree](TreeCursor cursor)
-	{
-		if (tree.isRefinable(cursor.cell()))
 		{
-			constexpr size_t nVertices = 2 << TreeCursor::D;
-			bool allInside = true;
-			bool allOutside = true;
-			for (size_t i = 0; i < nVertices; i++)
+			if (tree.isRefinable(cursor.cell()))
 			{
-				auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
-				Vec3d p = cursor.m_origin + vertex * cursor.m_size;
-				if (shape(p) > 0.0) { allInside = false; }
-				else { allOutside = false; }
-			}
-			if (!allInside && !allOutside)
-			{
-				tree.refine(cursor.cell());
+				constexpr size_t nVertices = 2 << TreeCursor::D;
+				bool allInside = true;
+				bool allOutside = true;
+				for (size_t i = 0; i < nVertices; i++)
+				{
+					auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
+					Vec3d p = cursor.m_origin + vertex * cursor.m_size;
+					if (shape(p) > 0.0) { allInside = false; }
+					else { allOutside = false; }
+				}
+				if (!allInside && !allOutside)
+				{
+					tree.refine(cursor.cell());
+				}
 			}
 		}
-	}
-	, cursor);
+		, cursor);
 
-	hct::TreeLevelArray<double> cellValues;
-	tree.addArray(&cellValues);
+	hct::TreeLevelArray<double> cellSurfaceDistance;
+	tree.addArray(&cellSurfaceDistance);
 
-	hct::TreeLevelArray<int> cellOwner;
-	tree.addArray(&cellOwner);
+	hct::TreeLevelArray<size_t> cellLevel;
+	tree.addArray(&cellLevel);
+
+	hct::TreeLevelArray<size_t> cellIndex;
+	tree.addArray(&cellIndex);
+
+	hct::TreeLevelArray<bool> cellInside;
+	tree.addArray(&cellInside);
+
+	tree.preorderParseCells(
+		[shape, &cellSurfaceDistance, &cellLevel, &cellIndex, &cellInside](TreeCursor cursor)
+		{
+			hct::HyperCubeTreeCell cell = cursor.cell();
+			Vec3d p = cursor.m_origin + ( cursor.m_size * 0.5 );
+			double surfDist = shape(p);
+			cellSurfaceDistance[cell] = surfDist;
+			cellLevel[cell] = cell.level();
+			cellIndex[cell] = cell.index();
+			cellInside[cell] = (surfDist <= 0.0);
+		}
+		, cursor);
 
 	tree.toStream(std::cout);
 

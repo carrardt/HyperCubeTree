@@ -21,6 +21,8 @@ namespace hct
 	template<typename T>
 	class TreeLevelArray : public ITreeLevelArray
 	{
+		using ElementReference = typename std::vector<T>::reference;
+		using ConstElementReference = typename std::vector<T>::const_reference;
 		public:
 			inline void setNumberOfLevels(size_t nLevels) override final
 			{
@@ -52,14 +54,14 @@ namespace hct
 				return m_arrays[level];
 			}
 
-			inline const T& operator [] (HyperCubeTreeCell cell) const
+			inline ConstElementReference operator [] (HyperCubeTreeCell cell) const
 			{
 				assert(cell.m_level < m_arrays.size());
 				assert(cell.m_index < m_arrays[cell.m_level].size());
 				return m_arrays[cell.m_level][cell.m_index];
 			}
 
-			inline T& operator [] (HyperCubeTreeCell cell)
+			inline ElementReference operator [] (HyperCubeTreeCell cell)
 			{
 				assert(cell.m_level < m_arrays.size());
 				assert(cell.m_index < m_arrays[cell.m_level].size());
