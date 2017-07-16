@@ -17,7 +17,9 @@ int main()
 	subdivisions.addLevelSubdivision( {3,3,3} );
 	subdivisions.addLevelSubdivision( {3,3,3} );
 
-	hct::HyperCubeTree< 3, hct::SimpleSubdivisionScheme<3> > tree(subdivisions);
+	using Tree = hct::HyperCubeTree< 3, hct::SimpleSubdivisionScheme<3> >;
+	using TreeCursor = hct::HyperCubeTreeCursor<Tree>;
+	Tree tree(subdivisions);
 
 	hct::TreeLevelArray<double> cellValues;
 	tree.addArray(&cellValues);
@@ -40,11 +42,11 @@ int main()
 	tree.toStream(std::cout);
 
 	std::cout << "initialize cellValues" << std::endl;
-	tree.preorderParseCells([&cellValues](hct::HyperCubeTreeCell cell) { cellValues[cell] = cell.m_level*1000000.0 + cell.m_index; });
+	tree.preorderParseCells([&cellValues](TreeCursor cursor) { cellValues[cursor.cell()] = cursor.cell().level()*1000000.0 + cursor.cell().index(); });
 
 	double maxval = 0.0;
 	std::cout << "read cellValues" << std::endl;
-	tree.preorderParseCells([&maxval,&cellValues](hct::HyperCubeTreeCell cell) { maxval = std::max(maxval,cellValues[cell]); });
+	tree.preorderParseCells([&maxval,&cellValues](TreeCursor cursor) { maxval = std::max(maxval,cellValues[cursor.cell()]); });
 	std::cout << "max value = " << maxval << std::endl;
 
 	return 0;

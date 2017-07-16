@@ -3,6 +3,7 @@
 
 #include <initializer_list>
 #include <cstdint>
+#include <cstddef>
 
 namespace hct
 {

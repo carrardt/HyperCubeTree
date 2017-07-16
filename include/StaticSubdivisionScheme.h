@@ -35,7 +35,7 @@ namespace hct
 	struct StaticGridDimSet< StaticGridDim<S...> , GridTypes... >
 	{
 		static constexpr size_t grid_size = sizeof...(S);
-		static constexpr bool is_valid = StaticGridDimSet<GridTypes>::is_valid && StaticGridDimSet<GridTypes>::grid_size==grid_size;
+		static constexpr bool is_valid = StaticGridDimSet<GridTypes...>::is_valid && StaticGridDimSet<GridTypes...>::grid_size==grid_size;
 	};
 
 }

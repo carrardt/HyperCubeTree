@@ -107,9 +107,9 @@ namespace hct
 		inline void preorderParseCells(CellFuncT f, CellCursorT cursor = CellCursorT() )
 		{
 			f(cursor);
-			if (!isLeaf(cursor))
+			if (!isLeaf(cursor.cell()))
 			{
-				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.m_level);
+				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.cell().level());
 				ForEachGridLocation(grid, [&](GridLocation loc)
 					{
 						preorderParseCells( f, CellCursorT(*this, cursor, grid, loc) );

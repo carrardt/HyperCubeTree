@@ -23,18 +23,10 @@ struct TreeCursorWithPosition : public hct::HyperCubeTreeCursor<_Tree>
 	using GridLocation = typename Tree::GridLocation;
 
 	// initialization constructors
-	inline TreeCursorWithPosition()
-		: m_origin(0.0)
-		, m_size(1.0) {}
-	inline TreeCursorWithPosition(hct::Vec<double,D> domainSize)
-		: m_origin(0.0)
+	inline TreeCursorWithPosition(hct::Vec<double,D> domainSize , hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell() )
+		: SuperClass(cell)
+		, m_origin(0.0)
 		, m_size(domainSize) {}
-
-	// copy constructor
-	inline TreeCursorWithPosition(const TreeCursorWithPosition& cursor)
-		: SuperClass(cursor)
-		, m_origin(cursor.m_origin)
-		, m_size(cursor.m_size) {}
 
 	// recursion constructor
 	inline TreeCursorWithPosition(Tree& tree, TreeCursorWithPosition parent, SubdivisionGrid grid, GridLocation childLocation)
@@ -70,7 +62,7 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 	auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
 	auto shape = hct::csg_difference(sphereA, sphereB);
 
-	TreeCursor cursor(subdivisions.getLevelSubdivision(0));
+	TreeCursor cursor( subdivisions.getLevelSubdivision(0) );
 	std::cout << "Domain bounds = " << cursor.m_size << std::endl;
 
 	Vec3d cellSize = cursor.m_size;
@@ -86,7 +78,7 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 	tree.preorderParseCells(
 		[shape, &tree](TreeCursor cursor)
 	{
-		if (tree.isRefinable(cursor))
+		if (tree.isRefinable(cursor.cell()))
 		{
 			constexpr size_t nVertices = 2 << TreeCursor::D;
 			bool allInside = true;
@@ -100,7 +92,7 @@ void testTreeCSGRefine(SubdivisionScheme subdivisions)
 			}
 			if (!allInside && !allOutside)
 			{
-				tree.refine(cursor);
+				tree.refine(cursor.cell());
 			}
 		}
 	}

@@ -86,7 +86,7 @@ int main()
 	tree.preorderParseCells(
 		[shape, &tree](TreeCursor cursor)
 	{
-		if (tree.isRefinable(cursor))
+		if (tree.isRefinable(cursor.cell()))
 		{
 			constexpr size_t nVertices = 2 << TreeCursor::D;
 			bool allInside = true;
@@ -100,7 +100,7 @@ int main()
 			}
 			if (!allInside && !allOutside)
 			{
-				tree.refine(cursor);
+				tree.refine(cursor.cell());
 			}
 		}
 	}

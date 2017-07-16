@@ -23,7 +23,7 @@ int main()
 
 	std::cout << "Set(Grid0) valid = "<< hct::StaticGridDimSet< Grid0 >::is_valid << std::endl;
 	std::cout << "Set(Grid0,Grid1) valid = " << hct::StaticGridDimSet< Grid0,Grid1 >::is_valid << std::endl;
-/*	std::cout << "Set(Grid0,Grid1,Grid2) valid = " << hct::StaticGridDimSet< Grid0, Grid1, Grid2 >::is_valid << std::endl;
+	std::cout << "Set(Grid0,Grid1,Grid2) valid = " << hct::StaticGridDimSet< Grid0, Grid1, Grid2 >::is_valid << std::endl;
 	std::cout << "Set(Grid0,Grid1,Grid2,Grid3) valid = " << hct::StaticGridDimSet< Grid0, Grid1, Grid2, Grid3 >::is_valid << std::endl;
-	std::cout << "Set(Grid3,Grid0) valid = " << hct::StaticGridDimSet< Grid3, Grid0 >::is_valid << std::endl;*/
+	std::cout << "Set(Grid3,Grid0) valid = " << hct::StaticGridDimSet< Grid3, Grid0 >::is_valid << std::endl;
 }

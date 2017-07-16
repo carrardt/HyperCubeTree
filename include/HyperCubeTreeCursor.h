@@ -9,20 +9,25 @@ namespace hct
 	or derive from HyperCubeTreeCell and have the same constructors as this one
 	*/
 	template<typename _Tree>
-	struct HyperCubeTreeCursor : public HyperCubeTreeCell
+	class HyperCubeTreeCursor
 	{
+		public:
+		
 		using Tree = _Tree;
 		static constexpr unsigned int D = Tree::D;
 		using SubdivisionGrid = typename Tree::SubdivisionGrid;
 		using GridLocation = typename Tree::GridLocation;
 
-		inline HyperCubeTreeCursor() {}
+		inline HyperCubeTreeCursor(HyperCubeTreeCell cell = HyperCubeTreeCell() )
+			: m_cell(cell) {}
 
-		inline HyperCubeTreeCursor(HyperCubeTreeCell cell)
-			: HyperCubeTreeCell(cell) {}
-
-		inline HyperCubeTreeCursor(Tree& tree, HyperCubeTreeCell parent, SubdivisionGrid grid, GridLocation childLocation)
-			: HyperCubeTreeCell(tree.child(parent, grid.branch(childLocation))) {}
+		inline HyperCubeTreeCursor(Tree& tree, HyperCubeTreeCursor parent, SubdivisionGrid grid, GridLocation childLocation)
+			: m_cell(tree.child(parent.cell(), grid.branch(childLocation))) {}
+		
+		inline HyperCubeTreeCell cell() const { return m_cell; }
+		
+		private:
+		HyperCubeTreeCell m_cell;
 	};
 
 }
