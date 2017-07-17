@@ -1,20 +1,20 @@
 #pragma once
 
-#include "CubeEnum.h"
+#include "HyperCube.h"
 
 namespace hct
 {
-	template<typename T, unsigned int DecD, unsigned int IncD = 0> struct Nbh;
+	template<typename T, unsigned int DecD, unsigned int IncD = 0> struct HyperCubeNeighbor;
 
 	// Arret de la récursivité, on appel la procédure passée en paramètre
 	template<typename T, unsigned int Dim>
-	struct Nbh<T, 0, Dim>
+	struct HyperCubeNeighbor<T, 0, Dim>
 	{
 		template<typename ProcObj, typename M1, typename M2>
 		static inline void rdig(const Vec<unsigned int, Dim>& grid,
 			ProcObj& proc,
-			const CubeEnum<T, 0, M1>& parent,
-			CubeEnum<T, 0, M2> &child,
+			const HyperCube<T, 0, M1>& parent,
+			HyperCube<T, 0, M2> &child,
 			const Vec<unsigned int, Dim>& inCoord,
 			Vec<unsigned int, Dim> outCoord)
 		{
@@ -24,21 +24,21 @@ namespace hct
 	};
 
 	template<typename T, unsigned int DecD, unsigned int IncD>
-	struct Nbh
+	struct HyperCubeNeighbor
 	{
 		enum {
 			Dim = DecD + IncD
 		};
 
-		typedef Nbh<T, DecD - 1, IncD + 1> Next;
+		typedef HyperCubeNeighbor<T, DecD - 1, IncD + 1> Next;
 
 		template<typename Func, typename M1, typename M2>
 		static inline void
 			rdig(
 				const Vec<unsigned int, Dim>& grid,
 				Func& func,
-				const CubeEnum<T, DecD, M1> & parent,
-				CubeEnum<T, DecD, M2> & result,
+				const HyperCube<T, DecD, M1> & parent,
+				HyperCube<T, DecD, M2> & result,
 				const Vec<unsigned int, Dim> & inCoord,
 				Vec<unsigned int, IncD> outCoord)
 		{
@@ -81,8 +81,8 @@ namespace hct
 		static inline void dig(
 			const Vec<unsigned int, Dim>& grid,
 			Func& func,
-			const CubeEnum<T, Dim, NullBitField>& parent,
-			CubeEnum<T, Dim, NullBitField> &result,
+			const HyperCube<T, Dim, NullBitField>& parent,
+			HyperCube<T, Dim, NullBitField> &result,
 			Vec<unsigned int, Dim> inCoord)
 		{
 			rdig(grid, func, parent, result, inCoord, Vec<unsigned int, 0>());
@@ -90,4 +90,3 @@ namespace hct
 	};
 
 }; // namespace hct
-

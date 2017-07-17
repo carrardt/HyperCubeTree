@@ -6,7 +6,7 @@
 #endif
 
 #include "PointIds.h"
-#include "HyperCube.h"
+#include "CubeEnum.h"
 
 namespace Amr2Ugrid
 {

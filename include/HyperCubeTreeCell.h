@@ -4,7 +4,6 @@
 
 namespace hct
 {
-
 	struct HyperCubeTreeCell
 	{
 		inline HyperCubeTreeCell() : m_level(0), m_index(0) {}
@@ -12,6 +11,17 @@ namespace hct
 
 		inline size_t level() const { return m_level; }
 		inline size_t index() const { return m_index; }
+
+		inline bool operator == (const HyperCubeTreeCell& cell) const
+		{
+			return m_level == cell.level() && m_index == cell.index();
+		}
+
+		// returns true if this cell does not belong to a tree.
+		inline bool isExternalCell() const
+		{
+			return (m_level==0) && (m_index>1);
+		}
 
 		size_t m_level;
 		size_t m_index;

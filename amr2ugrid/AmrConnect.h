@@ -3,7 +3,7 @@
 
 #include "AmrLevels.h"
 #include "AmrTree.h"
-#include "HyperCube.h"
+#include "CubeEnum.h"
 #include "Nbh.h"
 #include "Vec.h"
 #include "GridEnum.h"

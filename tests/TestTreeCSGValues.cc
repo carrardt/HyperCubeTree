@@ -5,16 +5,12 @@
 #include "HyperCubeTreeLocatedCursor.h"
 
 #include <iostream>
-#include <algorithm>
-#include <initializer_list>
-#include <cmath>
 
 using hct::Vec3d;
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 using Tree = hct::HyperCubeTree< 3, SubdivisionScheme >;
 using TreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
-
 
 int main()
 {
