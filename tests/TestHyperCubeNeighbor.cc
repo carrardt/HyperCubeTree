@@ -1,6 +1,7 @@
 #include "HyperCubeNeighbor.h"
 #include "HyperCube.h"
 #include "Vec.h"
+#include "GridDimension.h"
 
 #include <iostream>
 #include <sstream>
@@ -30,7 +31,7 @@ struct NbhNodeInfo
 struct TestObj
 {
   template<unsigned int D, typename M1, typename M2>
-    inline void operator () (const HyperCube<NbhNodeInfo,0,M1>& parent, HyperCube<NbhNodeInfo,0,M2>& child, const Vec<unsigned int,D> grid,const Vec<unsigned int,D>, Vec<unsigned int,D> coord)
+    inline void operator () (const HyperCube<NbhNodeInfo,0,M1>& parent, HyperCube<NbhNodeInfo,0,M2>& child, GridDimension<D> grid, Vec<unsigned int,D>, Vec<unsigned int,D> coord)
   {
     // calculer les flags left et right
     cout<<"child/"; HyperCube<NbhNodeInfo,0,M2>::Mask::toStream(cout); cout<<" -> ";

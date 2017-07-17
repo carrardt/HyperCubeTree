@@ -32,7 +32,7 @@ namespace hct
 			inline AttachChildNeighbor(const Tree & tree) : m_tree(tree) {}
 
 			template<unsigned int D, typename M1, typename M2>
-			inline void operator () (const HyperCube<Cell, 0, M1>& parent, HyperCube<Cell, 0, M2>& child, SubdivisionGrid grid, GridLocation inCoord, GridLocation outCoord)
+			inline void operator () (const HyperCube<Cell, 0, M1>& parent, HyperCube<Cell, 0, M2>& child, GridDimension<D> grid, GridLocation inCoord, GridLocation outCoord)
 			{
 				if (parent.value.isTreeCell())
 				{
