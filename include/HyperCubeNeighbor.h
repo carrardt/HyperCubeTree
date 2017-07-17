@@ -1,6 +1,10 @@
 #pragma once
 
 #include "HyperCube.h"
+#include "GridDimension.h"
+
+#include <type_traits>
+#include <assert.h>
 
 namespace hct
 {
@@ -10,16 +14,17 @@ namespace hct
 	template<typename T, unsigned int Dim>
 	struct HyperCubeNeighbor<T, 0, Dim>
 	{
-		template<typename ProcObj, typename M1, typename M2>
-		static inline void rdig(const Vec<unsigned int, Dim>& grid,
-			ProcObj& proc,
-			const HyperCube<T, 0, M1>& parent,
-			HyperCube<T, 0, M2> &child,
-			const Vec<unsigned int, Dim>& inCoord,
-			Vec<unsigned int, Dim> outCoord)
+		template<typename FuncT, typename M1, typename M2>
+		static inline void rdig(
+			GridDimension<Dim> grid,		// parent's subdivision grid dimensions
+			const HyperCube<T, 0, M1>& parent,		// parent's neighbor containing child's neighbor
+			HyperCube<T, 0, M2> &child,				// child component involved
+			Vec<unsigned int, Dim> inCoord,	// parent subdivision grid coordinates where we digged
+			Vec<unsigned int, Dim> outCoord,		// parent's neighbor subdivision grid coordinates where to find child's neighbor
+			FuncT f )								// operator to apply
 		{
 			// seul outCoord est genere a l'envers, d'ou le .reverse()
-			proc(parent, child, grid, inCoord, outCoord.reverse());
+			f(parent, child, grid, inCoord, outCoord.reverse());
 		}
 	};
 
@@ -32,15 +37,15 @@ namespace hct
 
 		typedef HyperCubeNeighbor<T, DecD - 1, IncD + 1> Next;
 
-		template<typename Func, typename M1, typename M2>
+		template<typename FuncT, typename M1, typename M2>
 		static inline void
 			rdig(
-				const Vec<unsigned int, Dim>& grid,
-				Func& func,
+				GridDimension<Dim> grid,
 				const HyperCube<T, DecD, M1> & parent,
 				HyperCube<T, DecD, M2> & result,
-				const Vec<unsigned int, Dim> & inCoord,
-				Vec<unsigned int, IncD> outCoord)
+				Vec<unsigned int, Dim> inCoord,
+				Vec<unsigned int, IncD> outCoord,
+				FuncT f )
 		{
 			// !!! outCoord est généré en inversé
 
@@ -53,39 +58,39 @@ namespace hct
 			// voisinage gauche : ensemble des voisins dont le Dième bit des numéros des points partagés ne peut être que 0
 			if (inCoordVal == 0)
 			{
-				Next::rdig(grid, func, parent._0, result._0, inCoord, Vec<unsigned int, IncD + 1>(gridVal - 1, outCoord));
+				Next::rdig(grid, parent._0, result._0, inCoord, Vec<unsigned int, IncD + 1>(gridVal - 1, outCoord), f);
 			}
 			else
 			{
-				Next::rdig(grid, func, parent._X, result._0, inCoord, Vec<unsigned int, IncD + 1>(inCoordVal - 1, outCoord));
+				Next::rdig(grid, parent._X, result._0, inCoord, Vec<unsigned int, IncD + 1>(inCoordVal - 1, outCoord), f);
 			}
 
 			// voisinage central : ensemble des voisins dont le Dième bit des numéros des points partagés peut être 0 ou 1
 			{
-				Next::rdig(grid, func, parent._X, result._X, inCoord, Vec<unsigned int, IncD + 1>(inCoordVal, outCoord));
+				Next::rdig(grid, parent._X, result._X, inCoord, Vec<unsigned int, IncD + 1>(inCoordVal, outCoord), f);
 			}
 
 			// voisinage droite : ensemble des voisins dont le Dième bit des numéros des points partagés ne peut être que 1
 			if (inCoordVal == (gridVal - 1))
 			{
-				Next::rdig(grid, func, parent._1, result._1, inCoord, Vec<unsigned int, IncD + 1>(0, outCoord));
+				Next::rdig(grid, parent._1, result._1, inCoord, Vec<unsigned int, IncD + 1>(0, outCoord), f);
 			}
 			else
 			{
-				Next::rdig(grid, func, parent._X, result._1, inCoord, Vec<unsigned int, IncD + 1>(inCoordVal + 1, outCoord));
+				Next::rdig(grid, parent._X, result._1, inCoord, Vec<unsigned int, IncD + 1>(inCoordVal + 1, outCoord), f);
 			}
 		}
 
 		/* méthode frontale */
-		template<typename Func>
+		template<typename FuncT>
 		static inline void dig(
-			const Vec<unsigned int, Dim>& grid,
-			Func& func,
-			const HyperCube<T, Dim, NullBitField>& parent,
-			HyperCube<T, Dim, NullBitField> &result,
-			Vec<unsigned int, Dim> inCoord)
+			GridDimension<Dim> grid,	// subdivision grid dimensions of parent
+			const HyperCube<T, Dim>& parent,	// parent hypercube
+			HyperCube<T, Dim> &result,			// destination hypercube
+			Vec<unsigned int, Dim> inCoord,		// dig coordinate, inside the subdivision grid
+			FuncT f )							// operator to apply
 		{
-			rdig(grid, func, parent, result, inCoord, Vec<unsigned int, 0>());
+			rdig(grid, parent, result, inCoord, Vec<unsigned int, 0>(), f);
 		}
 	};
 

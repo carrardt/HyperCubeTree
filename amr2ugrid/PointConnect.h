@@ -22,7 +22,7 @@ namespace Amr2Ugrid
     inline PointConnect(AmrSidePoints<D>& s, int l, int n, const ElementInfo& _nbh )
       :  self(s), level(l), node(n), nbh(_nbh) {}
     
-    template<typename Point> inline void process( Point )
+    template<typename Point> inline void operator () ( Point )
     {
       if( node!=-1 && nbh.node!=-1 )
 	{

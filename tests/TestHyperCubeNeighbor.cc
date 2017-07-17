@@ -30,13 +30,12 @@ struct NbhNodeInfo
 struct TestObj
 {
   template<unsigned int D, typename M1, typename M2>
-    inline void operator () (const HyperCube<NbhNodeInfo,0,M1>& parent, HyperCube<NbhNodeInfo,0,M2>& child, const Vec<unsigned int,D>& grid,const Vec<unsigned int,D>&, Vec<unsigned int,D> coord)
+    inline void operator () (const HyperCube<NbhNodeInfo,0,M1>& parent, HyperCube<NbhNodeInfo,0,M2>& child, const Vec<unsigned int,D> grid,const Vec<unsigned int,D>, Vec<unsigned int,D> coord)
   {
     // calculer les flags left et right
     cout<<"child/"; HyperCube<NbhNodeInfo,0,M2>::Mask::toStream(cout); cout<<" -> ";
     cout<<"parent/"; HyperCube<NbhNodeInfo,0,M1>::Mask::toStream(cout); cout<<" @ ("; coord.toStream(cout); cout<<")\n";
   }
-  int _;
 };
 
 template <unsigned int D> struct NbhTest
@@ -64,7 +63,7 @@ template <unsigned int D> struct NbhTest
     cout<<"grid=("; grid.toStream(cout); cout<<"), coord=("; coord.toStream(cout); cout<<')'<<endl;
 
     TestObj proc;
-	HyperCubeNeighbor<NbhNodeInfo,D>::dig(grid,proc,root,inner,coord);
+	HyperCubeNeighbor<NbhNodeInfo,D>::dig(grid,root,inner,coord, proc);
   }
 
 };

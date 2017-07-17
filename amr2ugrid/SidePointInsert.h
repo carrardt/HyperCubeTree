@@ -27,7 +27,7 @@ namespace Amr2Ugrid
       : self(s), level(l), node(n), nbh(_nbh) {}
     
     // not a functer 'cause it has a type specialization (Point)
-    template<typename Point> inline void process( Point )
+    template<typename Point> inline void operator () ( Point )
     {
       if( node!=-1 && nbh.node!=-1 )
 	{

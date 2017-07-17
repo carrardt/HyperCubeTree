@@ -3,6 +3,7 @@
 #include "GridDimension.h"
 #include "csg.h"
 #include "HyperCubeTreeLocatedCursor.h"
+#include "HyperCubeTreeNbhCursor.h"
 
 #include <iostream>
 
@@ -14,10 +15,10 @@ int main()
 	using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 	using Tree = hct::HyperCubeTree< 3, SubdivisionScheme >;
 	using TreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
+	using NbhTreeCursor = hct::HyperCubeTreeNbhCursor<Tree>;
 
 	SubdivisionScheme subdivisions;
 	subdivisions.addLevelSubdivision({ 4,4,20 });
-	subdivisions.addLevelSubdivision({ 3,3,3 });
 	subdivisions.addLevelSubdivision({ 3,3,3 });
 	subdivisions.addLevelSubdivision({ 3,3,3 });
 	subdivisions.addLevelSubdivision({ 3,3,3 });
@@ -45,15 +46,9 @@ int main()
 		std::cout << "level " << (i + 1) << " : size = " << cellSize << std::endl;
 	}
 
-	hct::TreeLevelArray<double> cellValues;
-	tree.addArray(&cellValues);
-
-	tree.preorderParseCells(
-		[shape, &tree, &cellValues](TreeCursor cursor)
+	tree.preorderParseCells( [shape, &tree](TreeCursor cursor)
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
-		// at any level, compute a cell value equal to the surface function evaluated at the center of the cell
-		cellValues[cell] = shape(cursor.m_origin + (cursor.m_size * 0.5));
 		// refine along the implicit surface shape(x)=0
 		if (tree.isRefinable(cell))
 		{
@@ -74,6 +69,17 @@ int main()
 		}
 	}
 	, cursor);
+	tree.toStream(std::cout);
+
+
+	std::cout << "\nTree traversal with Neighborhood :\n";
+	NbhTreeCursor nbhCursor;
+	tree.preorderParseCells( [](NbhTreeCursor nbhCursor)
+	{
+		nbhCursor.cell().toStream(std::cout);
+		std::cout << '\n';
+	}
+	, nbhCursor);
 
 	return 0;
 }

@@ -2,6 +2,7 @@
 
 #include "HyperCubeTreeCell.h"
 #include "HyperCube.h"
+#include "HyperCubeNeighbor.h"
 
 namespace hct
 {
@@ -13,22 +14,47 @@ namespace hct
 	{
 		using Tree = _Tree;
 		static constexpr unsigned int D = Tree::D;
-		using HCube = HyperCube< hct::HyperCubeTreeCell , D >;
+		using Cell = hct::HyperCubeTreeCell;
+		using HCube = HyperCube< Cell , D >;
 		using SubdivisionGrid = typename Tree::SubdivisionGrid;
 		using GridLocation = typename Tree::GridLocation;
 
 		// initialization constructors
 		inline HyperCubeTreeNbhCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
 		{
-			hct::HyperCubeTreeCell nullCell(0, 1); // detected "external" of any tree
-			m_nbh.forEachValue([=nullCell](hct::HyperCubeTreeCell& cell) { cell = nullCell; })
+			m_nbh.forEachValue([](hct::HyperCubeTreeCell& cell) { cell = hct::HyperCubeTreeCell(0, 1); });
 			m_nbh.self() = cell;
 		}
 
-		// recursion constructor
-		inline HyperCubeTreeNbhCursor(Tree& tree, HyperCubeTreeLocatedCursor parent, SubdivisionGrid grid, GridLocation childLocation)
+		// Functor to be applied on parent/child pairs upon recursion
+		struct AttachChildNeighbor
 		{
-			
+			inline AttachChildNeighbor(const Tree & tree) : m_tree(tree) {}
+
+			template<unsigned int D, typename M1, typename M2>
+			inline void operator () (const HyperCube<Cell, 0, M1>& parent, HyperCube<Cell, 0, M2>& child, SubdivisionGrid grid, GridLocation inCoord, GridLocation outCoord)
+			{
+				if (parent.value.isTreeCell())
+				{
+					child.value = m_tree.child(parent.value, outCoord);
+				}
+				else
+				{
+					child.value = parent.value; // this is the case for 'null' cells, or extra cells added to surround root node.
+				}
+			}
+			const Tree & m_tree;
+		};
+
+		// recursion constructor
+		inline HyperCubeTreeNbhCursor(Tree& tree, HyperCubeTreeNbhCursor parent, SubdivisionGrid grid, GridLocation childLocation)
+		{
+			HyperCubeNeighbor<Cell, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighbor(tree) );
+		}
+
+		inline Cell cell() const
+		{
+			return m_nbh.self();
 		}
 
 		HCube m_nbh;

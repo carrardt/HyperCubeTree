@@ -17,14 +17,20 @@ namespace hct
 			return m_level == cell.level() && m_index == cell.index();
 		}
 
-		// returns true if this cell does not belong to a tree.
-		inline bool isExternalCell() const
+		// returns true if this cell belongs to a tree.
+		inline bool isTreeCell() const
 		{
 			return (m_level==0) && (m_index>1);
 		}
 
+		template<typename StreamT>
+		inline StreamT& toStream(StreamT& out)
+		{
+			out << m_level << ':' << m_index;
+		}
+
+	private:
 		size_t m_level;
 		size_t m_index;
 	};
-
 }

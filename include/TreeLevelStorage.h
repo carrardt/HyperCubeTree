@@ -56,16 +56,16 @@ namespace hct
 
 			inline ConstElementReference operator [] (HyperCubeTreeCell cell) const
 			{
-				assert(cell.m_level < m_arrays.size());
-				assert(cell.m_index < m_arrays[cell.m_level].size());
-				return m_arrays[cell.m_level][cell.m_index];
+				assert(cell.level() < m_arrays.size());
+				assert(cell.index() < m_arrays[cell.level()].size());
+				return m_arrays[cell.level()][cell.index()];
 			}
 
 			inline ElementReference operator [] (HyperCubeTreeCell cell)
 			{
-				assert(cell.m_level < m_arrays.size());
-				assert(cell.m_index < m_arrays[cell.m_level].size());
-				return m_arrays[cell.m_level][cell.m_index];
+				assert(cell.level() < m_arrays.size());
+				assert(cell.index() < m_arrays[cell.level()].size());
+				return m_arrays[cell.level()][cell.index()];
 			}
 
 			template<typename StreamT>

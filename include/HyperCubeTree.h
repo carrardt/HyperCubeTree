@@ -70,15 +70,15 @@ namespace hct
 		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, size_t childIndex) const
 		{
 			assert(!isLeaf(cell));
-			assert((cell.m_level + 1) < m_storage.getNumberOfLevels());
-			assert((m_cell_child_index[cell] + childIndex) < m_storage.getLevelSize(cell.m_level + 1));
-			return HyperCubeTreeCell(cell.m_level + 1, m_cell_child_index[cell] + childIndex);
+			assert((cell.level() + 1) < m_storage.getNumberOfLevels());
+			assert((m_cell_child_index[cell] + childIndex) < m_storage.getLevelSize(cell.level() + 1));
+			return HyperCubeTreeCell(cell.level() + 1, m_cell_child_index[cell] + childIndex);
 		}
 
 		inline HyperCubeTreeCell child(HyperCubeTreeCell cell, GridLocation childLocation ) const
 		{
-			assert( cell.m_level < m_subdivision_scheme.getNumberOfLevelSubdivisions() );
-			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
+			assert( cell.level() < m_subdivision_scheme.getNumberOfLevelSubdivisions() );
+			GridDimension<D> grid = m_subdivision_scheme.getLevelSubdivision(cell.level());
 			assert((childLocation < grid).reduce_and());
 			return child(cell, grid.branch(childLocation));
 		}
@@ -91,10 +91,10 @@ namespace hct
 		inline void refine(HyperCubeTreeCell cell)
 		{
 			assert(isRefinable(cell));
-			SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cell.m_level);
-			size_t childStartIndex = m_storage.getLevelSize(cell.m_level + 1);
+			SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cell.level());
+			size_t childStartIndex = m_storage.getLevelSize(cell.level() + 1);
 			size_t nbChildren = grid.gridSize();
-			size_t childLevel = cell.m_level + 1;
+			size_t childLevel = cell.level() + 1;
 			m_storage.resize(childLevel, childStartIndex + nbChildren );
 			m_cell_child_index[cell] = childStartIndex;
 			for (size_t i = childStartIndex; i < (childStartIndex + nbChildren); i++)

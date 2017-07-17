@@ -8,7 +8,7 @@ using namespace hct;
 struct PrintCBitField
 {
   inline PrintCBitField(ostream& o) : out(o) {}
-  template<typename BF> inline void process ( BF )
+  template<typename BF> inline void operator () ( BF )
   {
     BF::toStream(out);
     out<<' ';
