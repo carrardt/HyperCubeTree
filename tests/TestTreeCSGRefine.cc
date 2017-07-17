@@ -52,7 +52,7 @@ static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 	{
 		if (tree.isRefinable(cursor.cell()))
 		{
-			constexpr size_t nVertices = 2 << TreeCursor::D;
+			constexpr size_t nVertices = 1 << TreeCursor::D;
 			bool allInside = true;
 			bool allOutside = true;
 			for (size_t i = 0; i < nVertices; i++)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 
 namespace hct
 {
@@ -20,17 +21,29 @@ namespace hct
 		// returns true if this cell belongs to a tree.
 		inline bool isTreeCell() const
 		{
-			return (m_level==0) && (m_index>1);
+			return (m_level>0) || (m_index==0);
+		}
+
+		inline bool isNil() const
+		{
+			return operator == (nil());
 		}
 
 		template<typename StreamT>
 		inline StreamT& toStream(StreamT& out)
 		{
 			out << m_level << ':' << m_index;
+			return out;
+		}
+
+		static HyperCubeTreeCell nil()
+		{
+			return HyperCubeTreeCell( 0, std::numeric_limits<size_t>::max() );
 		}
 
 	private:
 		size_t m_level;
 		size_t m_index;
 	};
+
 }

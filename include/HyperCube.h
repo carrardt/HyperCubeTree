@@ -23,7 +23,6 @@ namespace hct
 	From this simple rule you can count and enumerate each constituants of an hyper cube of any dimension.
 	*/
 
-  //============================== New version =============================
   /*
   One can now specialize what type is stored depending of the constituant dimensionality.
   This has to be done ...
@@ -51,11 +50,32 @@ namespace hct
 	  inline T& self() { return value; }
 	  inline const T& self() const { return value; }
 
-	  template<typename FuncT> inline void forEachComponent(FuncT f) const { f(*this); }
-	  template<typename FuncT> inline void forEachComponent(FuncT f) { f(*this); }
+	  template<typename FuncT> inline void forEachComponent(FuncT f) const
+	  { 
+		  f(*this);
+	  }
+	  template<typename FuncT> inline void forEachComponent(FuncT f)
+	  { 
+		  f(*this); 
+	  }
 
-	  template<typename FuncT> inline void forEachValue(FuncT f) const { f(value); }
-	  template<typename FuncT> inline void forEachValue(FuncT f) { f(value); }
+	  template<typename FuncT> inline void forEachValue(FuncT f) const 
+	  { 
+		  f(value); 
+	  }
+	  template<typename FuncT> inline void forEachValue(FuncT f) 
+	  { 
+		  f(value); 
+	  }
+
+	  template<typename FuncT> inline void forEachVertex(FuncT f) const
+	  { 
+		 f(Mask::BITFIELD, value); 
+	  }
+	  template<typename FuncT> inline void forEachVertex(FuncT f) 
+	  { 
+		  f(Mask::BITFIELD, value);
+	  }
   };
 
   template <typename _T, unsigned int _D, typename _Mask> struct HyperCube
@@ -115,6 +135,22 @@ namespace hct
 		  _X.forEachValue(f);
 		  _1.forEachValue(f);
 	  }
+
+	  // =============== iterate over all the vertices (0-D components) ============
+	  template<typename FuncT>
+	  inline void forEachVertex(FuncT f)
+	  {
+		  _0.forEachVertex(f);
+		  _1.forEachVertex(f);
+	  }
+
+	  template<typename FuncT>
+	  inline void forEachVertex(FuncT f) const
+	  {
+		  _0.forEachVertex(f);
+		  _1.forEachVertex(f);
+	  }
+
 
   };
 

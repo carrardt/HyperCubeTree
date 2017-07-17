@@ -44,6 +44,7 @@ namespace hct
 		template<typename T2> inline Vec(const T2*) {}
 
 		template<typename T2> inline void fromArray(const T2*) const {}
+		static inline Vec<T, 0> fromBitfield(size_t) { return Vec<T, 0>(); }
 
 		template<typename StreamT> inline void toStream(StreamT& out) const {}
 		inline Vec operator = (Vec) const { return Vec(); }
@@ -61,14 +62,6 @@ namespace hct
 		inline bool reduce_and() const { return true; }
 		inline bool reduce_or() const { return false; }
 
-/*
-#define REDUCE_BOOL(func) inline bool reduce_##func() const { return false; }
-		REDUCE_BOOL(isnan);
-		REDUCE_BOOL(isinf);
-		REDUCE_BOOL(isfinite);
-		REDUCE_BOOL(isnormal);
-#undef REDUCE_BOOL
-*/
 		template<typename T2> inline Vec min(Vec<T2, 0>) const { return Vec(); }
 		template<typename T2> inline Vec max(Vec<T2, 0>) const { return Vec(); }
 
@@ -159,7 +152,7 @@ namespace hct
 
 		static inline Vec<T,D> fromBitfield(size_t n)
 		{
-			return Vec<T,D> ( static_cast<T>( (n >> (D - 1)) & 1), Vec<T, D - 1>(n));
+			return Vec<T,D> ( static_cast<T>( (n >> (D - 1)) & 1), Vec<T, D - 1>::fromBitfield(n));
 		}
 
 		template <typename T2> inline void fromArray(const T2* coord)
@@ -213,15 +206,6 @@ namespace hct
 		inline bool reduce_and() const { return (static_cast<bool>(val) && Vec<T, D - 1>::reduce_and()); }
 		inline bool reduce_or() const { return (static_cast<bool>(val) || Vec<T, D - 1>::reduce_and()); }
 
-		// FIXME: not correct !! at least for isfinite, 'and' should be used instead of 'or'
-/*
-#define REDUCE_BOOL(func) inline bool reduce_##func() const { return func(val) ||  Vec<T,D-1>::reduce_##func(); }
-		REDUCE_BOOL(isnan);
-		REDUCE_BOOL(isinf);
-		REDUCE_BOOL(isfinite);
-		REDUCE_BOOL(isnormal);
-#undef REDUCE_BOOL
-*/
 		// operations algebriques
 		template<typename T2> inline T dot(const Vec<T2, D>& op) const { return (T)((val*op.val) + Vec<T, D - 1>::dot(op)); }
 		inline T length2() const { return (T)((val*val) + Vec<T, D - 1>::length2()); }
@@ -242,7 +226,7 @@ namespace hct
 	operator OP (const T2& b) const \
     { return Vec<decltype(T() OP T2()),D>( val OP b , Vec<T,D-1>::operator OP (b) ); }
 
-#define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,D> operator OP (const Vec<T2,D>& op) const { return Vec<bool,D>( (bool)(val OP op.val) , Vec<T,D-1>::operator OP (op) ); }
+#define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,D> operator OP (const Vec<T2,D>& op) const { return Vec<bool,D>( static_cast<bool>(val OP op.val) , Vec<T,D-1>::operator OP (op) ); }
 #define SELF_VEC_OPERATOR(OP) template<typename T2> inline Vec& operator OP (const Vec<T2,D>& op) { val OP ((T) op.val) ; Vec<T,D-1>::operator OP (op); return *this; }
 #define SELF_SCAL_OPERATOR(OP) inline Vec& operator OP (const T& op) { val OP op; Vec<T,D-1>::operator OP (op); return *this; }
 

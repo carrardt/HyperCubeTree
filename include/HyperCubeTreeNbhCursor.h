@@ -3,6 +3,7 @@
 #include "HyperCubeTreeCell.h"
 #include "HyperCube.h"
 #include "HyperCubeNeighbor.h"
+#include <assert.h>
 
 namespace hct
 {
@@ -22,7 +23,7 @@ namespace hct
 		// initialization constructors
 		inline HyperCubeTreeNbhCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
 		{
-			m_nbh.forEachValue([](hct::HyperCubeTreeCell& cell) { cell = hct::HyperCubeTreeCell(0, 1); });
+			m_nbh.forEachValue([](hct::HyperCubeTreeCell& cell) { cell = hct::HyperCubeTreeCell::nil(); });
 			m_nbh.self() = cell;
 		}
 
@@ -36,11 +37,19 @@ namespace hct
 			{
 				if (parent.value.isTreeCell())
 				{
-					child.value = m_tree.child(parent.value, outCoord);
+					// FIXME: add sliding information, as in legacy code "amr2ugrid/AmrConnect.h"
+					if (!m_tree.isLeaf(parent.value))
+					{
+						child.value = m_tree.child(parent.value, outCoord);
+					}
+					else
+					{
+						child.value = parent.value; // just a neighbor from a less deep level
+					}
 				}
 				else
 				{
-					child.value = parent.value; // this is the case for 'null' cells, or extra cells added to surround root node.
+					child.value = parent.value; // this is the case for 'nil' cells, or extra cells added to surround root node.
 				}
 			}
 			const Tree & m_tree;
@@ -49,6 +58,7 @@ namespace hct
 		// recursion constructor
 		inline HyperCubeTreeNbhCursor(Tree& tree, HyperCubeTreeNbhCursor parent, SubdivisionGrid grid, GridLocation childLocation)
 		{
+			assert(!tree.isLeaf(parent.cell()));
 			HyperCubeNeighbor<Cell, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighbor(tree) );
 		}
 

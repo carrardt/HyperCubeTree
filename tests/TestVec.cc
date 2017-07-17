@@ -38,5 +38,13 @@ int main()
   cout<<"reduce_mul("<<b<<") = "<<b.reduce_mul()<<endl;
   cout<<"reverse("<<b<<") = "<<b.reverse()<<endl;
   cout << "map<square>("<<b<<") = " << b.map( [](double x) -> double {return x*x; } ) << endl;
+
+  // bitfield tests
+  for (size_t i = 0; i < 8; i++)
+  {
+	  auto vertex = hct::bitfield_vec<3>(i);
+	  std::cout << "bitfield(" << i << ") = " << vertex << std::endl;
+  }
+
   return 0;
 }
