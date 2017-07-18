@@ -66,6 +66,45 @@ int main()
 		hc3.forEachVertex([](size_t i, int64_t c) { cout << "vertex " << i << " = " << c << '\n'; });
 	}
 
+	{
+		cout << "test bitfield [] operator :\n";
+		HyperCube<int64_t, 3> hc3(-1);
+		int i = 0;
+		hc3.forEachValue([&i](int64_t& c) { c = i++; });
+		hc3.forEachVertex([](int64_t i, int64_t& c) { c = -i; });
+#		define TEST_OPERATOR(c,b,a) \
+		using _##a##b##c = CBitField< Bit##a, CBitField< Bit##b, CBitField< Bit##c, NullBitField > > >; \
+		cout << "Bitfield = "; _##a##b##c::toStream(cout); cout<<" / "<<_##a##b##c::BITFIELD << " => " << hc3[_##a##b##c()] << endl
+		TEST_OPERATOR(0, 0, 0);
+		TEST_OPERATOR(0, 0, 1);
+		TEST_OPERATOR(0, 0, X);
+		TEST_OPERATOR(0, 1, 0);
+		TEST_OPERATOR(0, 1, 1);
+		TEST_OPERATOR(0, 1, X);
+		TEST_OPERATOR(0, X, 0);
+		TEST_OPERATOR(0, X, 1);
+		TEST_OPERATOR(0, X, X);
+		TEST_OPERATOR(1, 0, 0);
+		TEST_OPERATOR(1, 0, 1);
+		TEST_OPERATOR(1, 0, X);
+		TEST_OPERATOR(1, 1, 0);
+		TEST_OPERATOR(1, 1, 1);
+		TEST_OPERATOR(1, 1, X);
+		TEST_OPERATOR(1, X, 0);
+		TEST_OPERATOR(1, X, 1);
+		TEST_OPERATOR(1, X, X);
+		TEST_OPERATOR(X, 0, 0);
+		TEST_OPERATOR(X, 0, 1);
+		TEST_OPERATOR(X, 0, X);
+		TEST_OPERATOR(X, 1, 0);
+		TEST_OPERATOR(X, 1, 1);
+		TEST_OPERATOR(X, 1, X);
+		TEST_OPERATOR(X, X, 0);
+		TEST_OPERATOR(X, X, 1);
+		TEST_OPERATOR(X, X, X);
+#		undef TEST_OPERATOR
+	}
+
 	return 0;
 }
 

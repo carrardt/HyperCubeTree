@@ -47,11 +47,12 @@ namespace hct
 
 			template<unsigned int D, typename M1, typename M2>
 			inline void operator () (
-				const HyperCube<HCubeComponentValue,0, M1>& parent,
-				HyperCube<HCubeComponentValue, 0, M2>& child, 
+				const HyperCube<HCubeComponentValue,D>& parent,
+				HyperCube<HCubeComponentValue,D>& child, 
 				GridDimension<D> grid, 
 				GridLocation inCoord, 
-				GridLocation outCoord)
+				GridLocation outCoord
+				,M1,M2)
 			{
 				if (parent.value.m_cell.isTreeCell() )
 				{

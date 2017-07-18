@@ -76,6 +76,9 @@ namespace hct
 	  { 
 		  f(Mask::BITFIELD, value);
 	  }
+
+	  inline T& operator [] (NullBitField) { return value; }
+	  inline const T& operator [] (NullBitField) const { return value; }
   };
 
   template <typename _T, unsigned int _D, typename _Mask> struct HyperCube
@@ -151,7 +154,13 @@ namespace hct
 		  _1.forEachVertex(f);
 	  }
 
-
+	  // address sub element with a bitfield
+	  template<typename Tail> inline T& operator [] (CBitField<Bit0,Tail>) { return _0[Tail()]; }
+	  template<typename Tail> inline const T& operator [] (CBitField<Bit0, Tail>) const { return _0[Tail()]; }
+	  template<typename Tail> inline T& operator [] (CBitField<BitX, Tail>) { return _X[Tail()]; }
+	  template<typename Tail> inline const T& operator [] (CBitField<BitX, Tail>) const { return _X[Tail()]; }
+	  template<typename Tail> inline T& operator [] (CBitField<Bit1, Tail>) { return _1[Tail()]; }
+	  template<typename Tail> inline const T& operator [] (CBitField<Bit1, Tail>) const { return _1[Tail()]; }
   };
 
 
