@@ -33,7 +33,7 @@ int main()
 	auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
 	auto shape = hct::csg_difference(sphereA, sphereB);
 
-	TreeCursor cursor(subdivisions.getLevelSubdivision(0));
+	TreeCursor cursor( Vec3d(1.0) );
 	std::cout << "Domain bounds = " << cursor.m_size << std::endl;
 
 	Vec3d cellSize = cursor.m_size;
