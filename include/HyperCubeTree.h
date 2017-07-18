@@ -52,6 +52,11 @@ namespace hct
 			m_cell_child_index[rootCell()] = -1;
 		}
 
+		inline const SubdivisionSchemeT& getSubdivisionScheme() const
+		{
+			return m_subdivision_scheme;
+		}
+
 		inline size_t getNumberOfLevels() const
 		{
 			return m_storage.getNumberOfLevels();

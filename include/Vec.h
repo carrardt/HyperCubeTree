@@ -1,5 +1,4 @@
-#ifndef __AMR_VEC_H
-#define __AMR_VEC_H
+#pragma once
 
 #include <initializer_list>
 #include <cstdint>
@@ -226,9 +225,9 @@ namespace hct
 	operator OP (const T2& b) const \
     { return Vec<decltype(T() OP T2()),D>( val OP b , Vec<T,D-1>::operator OP (b) ); }
 
-#define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,D> operator OP (const Vec<T2,D>& op) const { return Vec<bool,D>( static_cast<bool>(val OP op.val) , Vec<T,D-1>::operator OP (op) ); }
-#define SELF_VEC_OPERATOR(OP) template<typename T2> inline Vec& operator OP (const Vec<T2,D>& op) { val OP ((T) op.val) ; Vec<T,D-1>::operator OP (op); return *this; }
-#define SELF_SCAL_OPERATOR(OP) inline Vec& operator OP (const T& op) { val OP op; Vec<T,D-1>::operator OP (op); return *this; }
+#define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,D> operator OP (const Vec<T2,D>& rhs) const { return Vec<bool,D>( static_cast<bool>(val OP rhs.val) , Vec<T,D-1>::operator OP (rhs) ); }
+#define SELF_VEC_OPERATOR(OP) template<typename T2> inline Vec& operator OP (const Vec<T2,D>& rhs) { val OP ((T) rhs.val) ; Vec<T,D-1>::operator OP (rhs); return *this; }
+#define SELF_SCAL_OPERATOR(OP) inline Vec& operator OP (const T& rhs) { val OP rhs; Vec<T,D-1>::operator OP (rhs); return *this; }
 
 		BINARY_VEC_OPERATOR(+);
 		BINARY_VEC_OPERATOR(-);
@@ -299,4 +298,3 @@ namespace hct
 
 }; // namespace hct
 
-#endif //__AMR_VEC_H

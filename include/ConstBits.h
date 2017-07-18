@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include "Vec.h"
 
 namespace hct
 {
@@ -47,6 +48,7 @@ namespace hct
 	{
 		static constexpr size_t N_ONES = 0;
 		static constexpr size_t N_ZEROS = 0;
+		static constexpr size_t N_DEF = 0;
 		static constexpr size_t N_FREE = 0;
 		static constexpr size_t N_BITS = 0;
 		static constexpr size_t BITFIELD = 0;
@@ -67,6 +69,7 @@ namespace hct
 
 		static constexpr size_t N_ONES = Tail::N_ONES + Bit::ONE;
 		static constexpr size_t N_ZEROS = Tail::N_ZEROS + Bit::ZERO;
+		static constexpr size_t N_DEF = N_ZEROS + N_ONES; // equals N_BITS - N_FREE
 		static constexpr size_t N_FREE = Tail::N_FREE + Bit::UNDEF;
 		static constexpr size_t N_BITS = Tail::N_BITS + 1;
 		static constexpr size_t BITFIELD = (Tail::N_FREE == 0) ? ((Bit::ONE << Tail::N_BITS) | Tail::BITFIELD) : 0;
@@ -88,6 +91,7 @@ namespace hct
 		{
 			CBitFieldEnumerator<FuncT, NullBitField, CBitField>::enumerate(f);
 		}
+
 	}; // CBitField
 
 

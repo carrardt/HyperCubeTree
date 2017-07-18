@@ -22,10 +22,15 @@ using Tree = hct::HyperCubeTree< 3, SubdivisionScheme >;
 using TreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
 using NbhTreeCursor = hct::HyperCubeTreeNbhCursor<Tree>;
 
-static void testTreeNeighborhood(Tree& tree, hct::Vec<double,3> domain)
+static void testTreeNeighborhood(Tree& tree)
 {
+	const SubdivisionScheme& subdivisions = tree.getSubdivisionScheme();
+	Vec3d domain(1.0);
+	for (size_t i = 0; i < subdivisions.getNumberOfLevelSubdivisions(); i++)
+	{
+		domain *= subdivisions.getLevelSubdivision(i);
+	}
 	std::cout << "Domain bounds = " << domain << std::endl;
-
 	TreeCursor cursor(domain);
 
 	// compute vertex coords
@@ -49,25 +54,25 @@ static void testTreeNeighborhood(Tree& tree, hct::Vec<double,3> domain)
 
 	tree.toStream(std::cout);
 
-
 	std::cout << "Corner neighbors connection test...\n";
 	size_t nbConnectedVertices = 0;
 	double maxVertexDist2 = 0.0;
 	tree.preorderParseCells([&cellVertices, &nbConnectedVertices,&maxVertexDist2](NbhTreeCursor nbhCursor)
 	{
+		using HCubeComponentValue = typename NbhTreeCursor::HCubeComponentValue;
 		hct::HyperCubeTreeCell me = nbhCursor.cell();
-		nbhCursor.m_nbh.forEachVertex([me, &cellVertices, &nbConnectedVertices, &maxVertexDist2](size_t i, hct::HyperCubeTreeCell neighbor)
+		nbhCursor.m_nbh.forEachVertex([me, &cellVertices, &nbConnectedVertices, &maxVertexDist2](size_t i, const HCubeComponentValue& neighbor)
 		{
-			if (neighbor.isTreeCell() && neighbor.level() == me.level())
+			if (neighbor.m_cell.isTreeCell() && neighbor.m_cell.level() == me.level())
 			{
 				size_t j = (i^7);
 				Vec3d p = cellVertices[me].m_vertices[i];
-				Vec3d n = cellVertices[neighbor].m_vertices[j];
+				Vec3d n = cellVertices[neighbor.m_cell].m_vertices[j];
 				double d = (n - p).dot(n - p);
 				maxVertexDist2 = std::max( d, maxVertexDist2 );
 				if ( d > 1.e-19 )
 				{
-					std::cout << "me=" << me << ", i=" << i << ", p=" << p << ", neighbor=" << neighbor << ", n=" << n <<", d="<<d <<std::endl;
+					std::cout << "me=" << me << ", i=" << i << ", p=" << p << ", neighbor=" << neighbor.m_cell << ", n=" << n <<", d="<<d <<std::endl;
 					abort();
 				}
 				++nbConnectedVertices;
@@ -86,8 +91,7 @@ int main()
 		subdivisions.addLevelSubdivision({ 2,2,2 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
-		Vec3d domain = subdivisions.getLevelSubdivision(0);
-		testTreeNeighborhood(tree, domain);
+		testTreeNeighborhood(tree);
 	}
 
 	{
@@ -96,8 +100,7 @@ int main()
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
-		Vec3d domain = subdivisions.getLevelSubdivision(0);
-		testTreeNeighborhood(tree, domain);
+		testTreeNeighborhood(tree);
 	}
 
 	{
@@ -112,8 +115,7 @@ int main()
 		{
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
-		Vec3d domain = subdivisions.getLevelSubdivision(0);
-		testTreeNeighborhood(tree, domain);
+		testTreeNeighborhood(tree);
 	}
 
 	{
@@ -128,8 +130,7 @@ int main()
 		{
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
-		Vec3d domain = subdivisions.getLevelSubdivision(0);
-		testTreeNeighborhood(tree, domain);
+		testTreeNeighborhood(tree);
 	}
 
 	{
@@ -148,11 +149,12 @@ int main()
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
 
+		Vec3d domainUnitSize(1.0);
+		TreeCursor cursor(domainUnitSize);
+
 		auto sphereA = hct::csg_sphere(Vec3d({ 0.0,0.0,0.0 }), 1.0);
 		auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
 		auto shape = hct::csg_difference(sphereA, sphereB);
-
-		TreeCursor cursor(subdivisions.getLevelSubdivision(0));
 
 		// refine tree given an implicit surface
 		tree.preorderParseCells([shape, &tree](TreeCursor cursor)
@@ -179,8 +181,7 @@ int main()
 		}
 		, cursor);
 
-		Vec3d domain = subdivisions.getLevelSubdivision(0);
-		testTreeNeighborhood(tree, domain);
+		testTreeNeighborhood(tree);
 	}
 
 	return 0;
