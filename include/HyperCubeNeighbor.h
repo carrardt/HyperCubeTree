@@ -101,6 +101,8 @@ namespace hct
 	template<typename T, unsigned int Dim, typename ParentMask, typename ChildMask>
 	struct HyperCubeNeighbor2<T, 0, Dim, ParentMask, ChildMask>
 	{
+		using ParentComponentMask = typename ParentMask::Reverse;
+		using ChildComponentMask = typename ChildMask::Reverse;
 		template<typename FuncT>
 		static inline void rdig(
 			GridDimension<Dim> grid,		// parent's subdivision grid dimensions
@@ -110,7 +112,7 @@ namespace hct
 			Vec<unsigned int, Dim> outCoord,		// parent's neighbor subdivision grid coordinates where to find child's neighbor
 			FuncT f)								// operator to apply
 		{
-			f(parent, child, grid, inCoord, outCoord.reverse(), ParentMask::Reverse(), ChildMask::Reverse() );
+			f(parent, child, grid, inCoord, outCoord.reverse(), ParentComponentMask(), ChildComponentMask() );
 		}
 	};
 
