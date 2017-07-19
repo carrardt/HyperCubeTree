@@ -45,31 +45,32 @@ namespace hct
 		{
 			inline AttachChildNeighbor(const Tree & tree) : m_tree(tree) {}
 
-			template<unsigned int D, typename M1, typename M2>
+			template<unsigned int D, typename ParentNeighborMask, typename ChildNeighborMask>
 			inline void operator () (
 				const HyperCube<HCubeComponentValue,D>& parent,
 				HyperCube<HCubeComponentValue,D>& child, 
 				GridDimension<D> grid, 
 				GridLocation inCoord, 
-				GridLocation outCoord
-				,M1,M2)
+				GridLocation outCoord,
+				ParentNeighborMask pm,
+				ChildNeighborMask cm)
 			{
-				if (parent.value.m_cell.isTreeCell() )
+				if (parent[pm].m_cell.isTreeCell() )
 				{
 					// FIXME: add sliding information, as in legacy code "amr2ugrid/AmrConnect.h"
 					// NOT as in AmrConnect.h, it's buggy :-(
-					if ( !m_tree.isLeaf(parent.value.m_cell) )
+					if ( !m_tree.isLeaf(parent[pm].m_cell) )
 					{
-						child.value.m_cell = m_tree.child(parent.value.m_cell, outCoord);
+						child[cm].m_cell = m_tree.child(parent[pm].m_cell, outCoord);
 					}
 					else
 					{
-						child.value.m_cell = parent.value.m_cell; // just a neighbor from a less deep level
+						child[cm].m_cell = parent[pm].m_cell; // just a neighbor from a less deep level
 					}
 				}
 				else
 				{
-					child.value.m_cell = parent.value.m_cell; // this is the case for 'nil' cells, or extra cells added to surround root node.
+					child[cm].m_cell = parent[pm].m_cell; // this is the case for 'nil' cells, or extra cells added to surround root node.
 				}
 			}
 			const Tree & m_tree;
@@ -79,7 +80,7 @@ namespace hct
 		inline HyperCubeTreeNbhCursor(Tree& tree, HyperCubeTreeNbhCursor parent, SubdivisionGrid grid, GridLocation childLocation)
 		{
 			assert(!tree.isLeaf(parent.cell()));
-			HyperCubeNeighbor<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighbor(tree) );
+			HyperCubeNeighbor2<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighbor(tree) );
 		}
 
 		inline Cell cell() const
