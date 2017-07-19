@@ -22,6 +22,7 @@ namespace hct
 		struct HCubeComponentValue
 		{
 			Cell m_cell;			// neighbor cell
+			Vec<size_t, D> m_shift_grid;
 			Vec<size_t, D> m_shift;	// shift relative to neighbor cell, if neighbor cell is higher in the tree than cell of interest.
 		};
 
@@ -35,6 +36,7 @@ namespace hct
 			m_nbh.forEachValue([](HCubeComponentValue& comp )
 				{ 
 					comp.m_cell = hct::HyperCubeTreeCell::nil();
+					comp.m_shift_grid = Vec<size_t, D>(1);
 					comp.m_shift = Vec<size_t, D>(0);
 				});
 			m_nbh.self().m_cell = cell;
@@ -50,27 +52,26 @@ namespace hct
 				const HyperCube<HCubeComponentValue,D>& parent,
 				HyperCube<HCubeComponentValue,D>& child, 
 				GridDimension<D> grid, 
-				GridLocation inCoord, 
-				GridLocation outCoord,
+				GridLocation childLocation, 
+				GridLocation neighborChildLocation,
 				ParentNeighborMask pm,
 				ChildNeighborMask cm)
 			{
-				if (parent[pm].m_cell.isTreeCell() )
+				if ( !m_tree.isTerminal(parent[pm].m_cell) )
 				{
-					// FIXME: add sliding information, as in legacy code "amr2ugrid/AmrConnect.h"
-					// NOT as in AmrConnect.h, it's buggy :-(
-					if ( !m_tree.isLeaf(parent[pm].m_cell) )
-					{
-						child[cm].m_cell = m_tree.child(parent[pm].m_cell, outCoord);
-					}
-					else
-					{
-						child[cm].m_cell = parent[pm].m_cell; // just a neighbor from a less deep level
-					}
+					assert( (parent[pm].m_shift == Vec<size_t, D>(0)).reduce_and() );
+					child[cm].m_cell = m_tree.child(parent[pm].m_cell, neighborChildLocation);
+					child[cm].m_shift = Vec<size_t, D>(0);
+					child[cm].m_shift_grid = Vec<size_t, D>(1);
 				}
 				else
 				{
-					child[cm].m_cell = parent[pm].m_cell; // this is the case for 'nil' cells, or extra cells added to surround root node.
+					child[cm].m_cell = parent[pm].m_cell; // can be a coarser cell, a nil or extraneous cell
+					child[cm].m_shift_grid *= grid;
+					// ! BEWARE !
+					// parent[cm] is _NOT_ a typo error. it is CORRECT. it has to be indexed with cm.
+					// Shifting is cumulated with current cell's parent's shifting at the same neighbor component.
+					child[cm].m_shift = (parent[cm].m_shift * grid) + (childLocation * bitfield_vec<D>(ChildNeighborMask::UNDEF_BITFIELD));
 				}
 			}
 			const Tree & m_tree;

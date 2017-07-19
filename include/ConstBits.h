@@ -108,7 +108,7 @@ namespace hct
 
 
 	// l'opération d'enumeration renverse l'empilement de bits par construction
-	// cette opération utilise a la fois une fonction de type une fonction reelle.
+	// cette opération utilise a la fois une fonction de type et une fonction reelle.
 	template<typename FuncT, typename RevHead> struct CBitFieldEnumerator<FuncT, RevHead, NullBitField>
 	{
 		using List = typename RevHead::Reverse;

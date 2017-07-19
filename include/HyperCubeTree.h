@@ -57,6 +57,11 @@ namespace hct
 			return m_subdivision_scheme;
 		}
 
+		inline SubdivisionGrid getLevelSubdivisionGrid(size_t level) const
+		{
+			return m_subdivision_scheme.getLevelSubdivision(level);
+		}
+
 		inline size_t getNumberOfLevels() const
 		{
 			return m_storage.getNumberOfLevels();
@@ -65,6 +70,13 @@ namespace hct
 		inline void addArray(ITreeLevelArray* a)
 		{
 			m_storage.addArray(a);
+		}
+
+		// returns true if cell is not a tree cell (nil, or ill-formed) or if it is a leaf;
+		inline bool isTerminal(HyperCubeTreeCell cell) const
+		{
+			if (!cell.isTreeCell()) { return true; }
+			else { return m_cell_child_index[cell] < 0; }
 		}
 
 		inline bool isLeaf(HyperCubeTreeCell cell) const

@@ -81,11 +81,11 @@ namespace hct
 		/* méthode frontale */
 		template<typename FuncT>
 		static inline void dig(
-			GridDimension<Dim> grid,	// subdivision grid dimensions of parent
-			const HyperCube<T, Dim>& parent,	// parent hypercube
-			HyperCube<T, Dim> &result,			// destination hypercube
-			Vec<unsigned int, Dim> inCoord,		// dig coordinate, inside the subdivision grid
-			FuncT f )							// operator to apply
+			GridDimension<Dim> grid,         // subdivision grid dimensions of parent
+			const HyperCube<T, Dim>& parent, // parent neighborhood hypercube
+			HyperCube<T, Dim> &result,       // destination neighborhood hypercube
+			Vec<unsigned int, Dim> inCoord,  // dig coordinate, inside the subdivision grid
+			FuncT f )                        // operator to apply
 		{
 			rdig(grid, parent, result, inCoord, Vec<unsigned int, 0>(), f);
 		}
@@ -93,6 +93,7 @@ namespace hct
 
 
 // ==================================== new version ======================================
+	// Note : keep the 2 different versions, it helps cross checking.
 
 	template<typename T, unsigned int DecD, unsigned int IncD = 0, typename ParentMask = NullBitField, typename ChildMask = NullBitField> struct HyperCubeNeighbor2;
 
@@ -109,7 +110,6 @@ namespace hct
 			Vec<unsigned int, Dim> outCoord,		// parent's neighbor subdivision grid coordinates where to find child's neighbor
 			FuncT f)								// operator to apply
 		{
-			// seul outCoord est genere a l'envers, d'ou le .reverse()
 			f(parent, child, grid, inCoord, outCoord.reverse(), ParentMask::Reverse(), ChildMask::Reverse() );
 		}
 	};
