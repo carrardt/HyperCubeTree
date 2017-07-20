@@ -48,25 +48,23 @@ namespace hct
 		{
 			inline AttachChildNeighbor(const Tree & tree) : m_tree(tree) {}
 
-			template<unsigned int D, typename ParentNeighborMask, typename ChildNeighborMask>
+			template<unsigned int D, typename M1, typename M2>
 			inline void operator () (
-				const HyperCube<HCubeComponentValue,D>& parent,
-				HyperCube<HCubeComponentValue,D>& child, 
-				GridDimension<D> grid, 
+				const HyperCube<HCubeComponentValue,0,M1>& parentNeighbor,
+				HyperCube<HCubeComponentValue,0,M2>& childNeighbor, 
+				GridDimension<D> subdivisionGrid, 
 				GridLocation childLocation, 
-				GridLocation neighborChildLocation,
-				ParentNeighborMask pm,
-				ChildNeighborMask cm)
+				GridLocation neighborChildLocation)
 			{
-				if ( !m_tree.isTerminal(parent[pm].m_cell) )
+				if ( !m_tree.isTerminal(parentNeighbor.value.m_cell) )
 				{
-					child[cm].m_cell = m_tree.child(parent[pm].m_cell, neighborChildLocation);
-					child[cm].m_resolution = parent[pm].m_resolution * grid;
-					child[cm].m_position = parent[pm].m_position * grid + neighborChildLocation;
+					childNeighbor.value.m_cell = m_tree.child(parentNeighbor.value.m_cell, neighborChildLocation);
+					childNeighbor.value.m_resolution = parentNeighbor.value.m_resolution * subdivisionGrid;
+					childNeighbor.value.m_position = parentNeighbor.value.m_position * subdivisionGrid + neighborChildLocation;
 				}
 				else
 				{
-					child[cm] = parent[pm];
+					childNeighbor.value = parentNeighbor.value;
 				}
 			}
 			const Tree & m_tree;
@@ -76,7 +74,7 @@ namespace hct
 		inline HyperCubeTreeNbhCursor(Tree& tree, HyperCubeTreeNbhCursor parent, SubdivisionGrid grid, GridLocation childLocation)
 		{
 			assert(!tree.isLeaf(parent.cell()));
-			HyperCubeNeighbor2<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighbor(tree) );
+			HyperCubeNeighbor<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighbor(tree) );
 		}
 
 		inline Cell cell() const

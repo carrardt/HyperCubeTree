@@ -94,6 +94,7 @@ namespace hct
 
 // ==================================== new version ======================================
 	// Note : keep the 2 different versions, it helps cross checking.
+	// this version is not needed anymore, but harmless.
 
 	template<typename T, unsigned int DecD, unsigned int IncD = 0, typename ParentMask = NullBitField, typename ChildMask = NullBitField> struct HyperCubeNeighbor2;
 

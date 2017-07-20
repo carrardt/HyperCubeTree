@@ -85,6 +85,7 @@ static void testTreeNeighborhood(Tree& tree)
 
 
 
+
 struct Neighbor2ComponentFunctor
 {
 	using HCubeComponentValue = typename NbhTreeCursor::HCubeComponentValue;
