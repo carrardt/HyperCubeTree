@@ -21,9 +21,9 @@ namespace hct
 		// Type of the value to be stored at each neighborhood hypercube's component
 		struct HCubeComponentValue
 		{
-			Cell m_cell;			// neighbor cell
-			Vec<size_t, D> m_shift_grid;
-			Vec<size_t, D> m_shift;	// shift relative to neighbor cell, if neighbor cell is higher in the tree than cell of interest.
+			Cell m_cell; // neighbor cell
+			Vec<size_t, D> m_resolution; // resolution in which position is expressed
+			Vec<size_t, D> m_position; // poisition of the cell
 		};
 
 		using HCube = HyperCube< HCubeComponentValue, D >;
@@ -33,11 +33,12 @@ namespace hct
 		// initialization constructors
 		inline HyperCubeTreeNbhCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
 		{
+			// TODO: modify this so that initial 'nil' neighbors are correctly positionned
 			m_nbh.forEachValue([](HCubeComponentValue& comp )
 				{ 
 					comp.m_cell = hct::HyperCubeTreeCell::nil();
-					comp.m_shift_grid = Vec<size_t, D>(1);
-					comp.m_shift = Vec<size_t, D>(0);
+					comp.m_resolution = Vec<size_t, D>(1);
+					comp.m_position = Vec<size_t, D>(0); // questionable, should be adjusted
 				});
 			m_nbh.self().m_cell = cell;
 		}
@@ -59,19 +60,13 @@ namespace hct
 			{
 				if ( !m_tree.isTerminal(parent[pm].m_cell) )
 				{
-					assert( (parent[pm].m_shift == Vec<size_t, D>(0)).reduce_and() );
 					child[cm].m_cell = m_tree.child(parent[pm].m_cell, neighborChildLocation);
-					child[cm].m_shift = Vec<size_t, D>(0);
-					child[cm].m_shift_grid = Vec<size_t, D>(1);
+					child[cm].m_resolution = parent[pm].m_resolution * grid;
+					child[cm].m_position = parent[pm].m_position * grid + neighborChildLocation;
 				}
 				else
 				{
-					child[cm].m_cell = parent[pm].m_cell; // can be a coarser cell, a nil or extraneous cell
-					child[cm].m_shift_grid *= grid;
-					// ! BEWARE !
-					// parent[cm] is _NOT_ a typo error. it is CORRECT. it has to be indexed with cm.
-					// Shifting is cumulated with current cell's parent's shifting at the same neighbor component.
-					child[cm].m_shift = (parent[cm].m_shift * grid) + (childLocation * bitfield_vec<D>(ChildNeighborMask::UNDEF_BITFIELD));
+					child[cm] = parent[pm];
 				}
 			}
 			const Tree & m_tree;
