@@ -21,7 +21,7 @@ namespace hct
 		// Type of the value to be stored at each neighborhood hypercube's component
 		struct HCubeComponentValue
 		{
-			Cell m_cell; // neighbor cell
+			hct::HyperCubeTreeCell m_cell; // neighbor cell
 			Vec<size_t, D> m_resolution; // resolution in which position is expressed
 			Vec<size_t, D> m_position; // poisition of the cell
 		};
@@ -44,9 +44,9 @@ namespace hct
 		}
 
 		// Functor to be applied on parent/child pairs upon recursion
-		struct AttachChildNeighbor
+		struct AttachChildNeighborFunctor
 		{
-			inline AttachChildNeighbor(const Tree & tree) : m_tree(tree) {}
+			inline AttachChildNeighborFunctor(const Tree & tree) : m_tree(tree) {}
 
 			template<unsigned int D, typename M1, typename M2>
 			inline void operator () (
@@ -74,7 +74,7 @@ namespace hct
 		inline HyperCubeTreeNbhCursor(Tree& tree, HyperCubeTreeNbhCursor parent, SubdivisionGrid grid, GridLocation childLocation)
 		{
 			assert(!tree.isLeaf(parent.cell()));
-			HyperCubeNeighbor<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighbor(tree) );
+			HyperCubeNeighbor<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighborFunctor(tree) );
 		}
 
 		inline Cell cell() const

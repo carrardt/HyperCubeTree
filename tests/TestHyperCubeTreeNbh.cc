@@ -84,67 +84,83 @@ static void testTreeNeighborhood(Tree& tree)
 }
 
 
+// ==========================================================================
+// ============================ 2nd testing method ==========================
+// ==========================================================================
 
+template<unsigned int _D> struct Neighbor2ComponentFunctor;
 
-struct Neighbor2ComponentFunctor
+template<typename _M>
+struct CompEnumFunc
 {
 	using HCubeComponentValue = typename NbhTreeCursor::HCubeComponentValue;
-	using CellVertexArray = hct::TreeLevelArray< CellVertices<3> >;
+	using CompBF = typename hct::HyperCube<HCubeComponentValue, 0, _M>::Mask;
+	static constexpr unsigned int D = CompBF::N_BITS;
 
-	inline Neighbor2ComponentFunctor(hct::HyperCubeTreeCell me, CellVertexArray& cellVertices, size_t& nbConnectedVertices, double& maxVertexDist2)
-		: m_me(me)
+	inline CompEnumFunc(Neighbor2ComponentFunctor<D>& comp, hct::HyperCube<HCubeComponentValue, 0, _M>& neighbor)
+		: m_comp(comp)
+		, m_neighbor(neighbor) {}
+
+	template<typename VertBF> inline void operator () (VertBF)
+	{
+		assert(VertBF::N_FREE == 0);
+		const HCubeComponentValue& me = m_comp.m_nbh.self();
+		hct::HyperCubeTreeCell meCell = me.m_cell;
+		hct::HyperCubeTreeCell nbCell = m_neighbor.value.m_cell;
+		assert(nbCell.isTreeCell());
+
+		size_t meVertex = VertBF::BITFIELD;
+		size_t compMask = CompBF::DEF_BITFIELD;
+		size_t nbVertex = meVertex ^ compMask;
+
+		hct::Vec<size_t, D> meVertexPos = ( me.m_position + hct::bitfield_vec<D>(meVertex) ) *  m_neighbor.value.m_resolution ;
+		hct::Vec<size_t, D> nbVertexPos = ( m_neighbor.value.m_position + hct::bitfield_vec<D>(nbVertex) ) * me.m_resolution ;
+
+		if ((meVertexPos == nbVertexPos).reduce_and())
+		{
+			Vec3d p = m_comp.m_cellVertices[meCell].m_vertices[meVertex];
+			Vec3d n = m_comp.m_cellVertices[nbCell].m_vertices[nbVertex];
+			double d = (n - p).dot(n - p); // TODO: replace this with L-inf norm (max component wise absolute difference)
+			m_comp.m_maxVertexDist2 = std::max(d, m_comp.m_maxVertexDist2);
+			if (d > 1.e-19)
+			{
+				std::cout << "comp="; CompBF::toStream(std::cout);
+				std::cout << "meC=" << meCell << ", meV=" << meVertex << ", p=" << p << ", nbC=" << nbCell << ", nbV=" << nbVertex << ", n=" << n << ", d=" << d << std::endl;
+				abort();
+			}
+			++m_comp.m_nbConnectedVertices;
+		}
+	}
+
+	Neighbor2ComponentFunctor<D>& m_comp;
+	hct::HyperCube<HCubeComponentValue, 0, _M>& m_neighbor;
+};
+
+template<unsigned int _D>
+struct Neighbor2ComponentFunctor
+{
+	static constexpr unsigned int D = _D;
+	using HCubeComponentValue = typename NbhTreeCursor::HCubeComponentValue;
+	using CellVertexArray = hct::TreeLevelArray< CellVertices<3> >;
+	using HCubeNeighborhood = hct::HyperCube< HCubeComponentValue, D >;
+
+	inline Neighbor2ComponentFunctor(const HCubeNeighborhood& nbh, CellVertexArray& cellVertices, size_t& nbConnectedVertices, double& maxVertexDist2)
+		: m_nbh(nbh)
 		, m_cellVertices(cellVertices)
 		, m_nbConnectedVertices(nbConnectedVertices)
 		, m_maxVertexDist2(maxVertexDist2) {}
 
 	template<typename _M>
-	struct CompEnumFunc
-	{
-		using CompBF = typename hct::HyperCube<HCubeComponentValue, 0, _M>::Mask;
-
-		inline CompEnumFunc(Neighbor2ComponentFunctor& comp, hct::HyperCube<HCubeComponentValue,0, _M>& neighbor)
-			: m_comp(comp)
-			, m_neighbor(neighbor) {}
-
-		template<typename VertBF> inline void operator () (VertBF)
-		{
-			assert(VertBF::N_FREE == 0);
-			hct::HyperCubeTreeCell meCell = m_comp.m_me;
-			hct::HyperCubeTreeCell nbCell = m_neighbor.value.m_cell;
-			if ( nbCell.isTreeCell() && nbCell.level() == meCell.level() )
-			{
-				size_t meVertex = VertBF::BITFIELD;
-				size_t compMask = CompBF::DEF_BITFIELD;
-				size_t nbVertex = meVertex ^ compMask;
-				Vec3d p = m_comp.m_cellVertices[meCell].m_vertices[meVertex];
-				Vec3d n = m_comp.m_cellVertices[nbCell].m_vertices[nbVertex];
-				double d = (n - p).dot(n - p);
-				m_comp.m_maxVertexDist2 = std::max(d, m_comp.m_maxVertexDist2);
-				if (d > 1.e-19)
-				{
-					std::cout << "comp="; CompBF::toStream(std::cout);
-					std::cout << "meC=" << meCell << ", meV=" << meVertex << ", p=" << p << ", nbC=" << nbCell << ", nbV=" << nbVertex << ", n=" << n << ", d=" << d << std::endl;
-					abort();
-				}
-				++ m_comp.m_nbConnectedVertices;
-			}
-		}
-
-		Neighbor2ComponentFunctor& m_comp;
-		hct::HyperCube<HCubeComponentValue, 0, _M>& m_neighbor;
-	};
-
-	template<typename _M>
 	inline void operator () ( hct::HyperCube<HCubeComponentValue, 0, _M>& neighbor)
 	{
 		using HCubeComp = typename hct::HyperCube<HCubeComponentValue, 0, _M>::Mask;
-		if (neighbor.value.m_cell.isTreeCell() && neighbor.value.m_cell.level() == m_me.level())
+		if ( neighbor.value.m_cell.isTreeCell() )
 		{
 			HCubeComp::enumerate( CompEnumFunc<_M>(*this, neighbor) );
 		}
 	}
 
-	hct::HyperCubeTreeCell m_me;
+	const HCubeNeighborhood& m_nbh;
 	CellVertexArray& m_cellVertices;
 	size_t& m_nbConnectedVertices;
 	double& m_maxVertexDist2;
@@ -189,7 +205,7 @@ static void testTreeNeighborhood2(Tree& tree)
 	{
 		using HCubeComponentValue = typename NbhTreeCursor::HCubeComponentValue;
 		hct::HyperCubeTreeCell me = nbhCursor.cell();
-		Neighbor2ComponentFunctor func(me, cellVertices, nbConnectedVertices, maxVertexDist2);
+		Neighbor2ComponentFunctor<TreeCursor::D> func(nbhCursor.m_nbh, cellVertices, nbConnectedVertices, maxVertexDist2);
 		nbhCursor.m_nbh.forEachComponent(func);
 	}
 	, NbhTreeCursor());
