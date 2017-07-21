@@ -12,7 +12,7 @@ namespace hct
 	A tree traversal cursor adding information about position and size of the traversed cell.
 	*/
 	template<typename _Tree>
-	struct HyperCubeTreeNbhCursor
+	struct HyperCubeTreeNeighborCursor
 	{
 		using Tree = _Tree;
 		static constexpr unsigned int D = Tree::D;
@@ -31,7 +31,7 @@ namespace hct
 		using GridLocation = typename Tree::GridLocation;
 
 		// initialization constructors
-		inline HyperCubeTreeNbhCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
+		inline HyperCubeTreeNeighborCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
 		{
 			// TODO: modify this so that initial 'nil' neighbors are correctly positionned
 			m_nbh.forEachValue([](HCubeComponentValue& comp )
@@ -71,7 +71,7 @@ namespace hct
 		};
 
 		// recursion constructor
-		inline HyperCubeTreeNbhCursor(Tree& tree, HyperCubeTreeNbhCursor parent, SubdivisionGrid grid, GridLocation childLocation)
+		inline HyperCubeTreeNeighborCursor(Tree& tree, const HyperCubeTreeNeighborCursor& parent, SubdivisionGrid grid, GridLocation childLocation)
 		{
 			assert(!tree.isLeaf(parent.cell()));
 			HyperCubeNeighbor<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighborFunctor(tree) );
@@ -80,6 +80,16 @@ namespace hct
 		inline Cell cell() const
 		{
 			return m_nbh.self().m_cell;
+		}
+
+		inline Vec<size_t, D> position() const
+		{
+			return m_nbh.self().m_position;
+		}
+
+		inline Vec<size_t, D> resolution() const
+		{
+			return m_nbh.self().m_resolution;
 		}
 
 		HCube m_nbh;

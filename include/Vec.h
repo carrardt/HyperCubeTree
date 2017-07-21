@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <cstdint>
 #include <cstddef>
+#include <cmath>
 
 namespace hct
 {
@@ -60,12 +61,16 @@ namespace hct
 		inline T reduce_add() const { return static_cast<T>(0); }
 		inline bool reduce_and() const { return true; }
 		inline bool reduce_or() const { return false; }
+		inline T reduce_max() const { return std::numeric_limits<T>::lowest(); }
 
 		template<typename T2> inline Vec min(Vec<T2, 0>) const { return Vec(); }
 		template<typename T2> inline Vec max(Vec<T2, 0>) const { return Vec(); }
+		inline Vec abs() const { return Vec(); }
 
 		template<typename T2> inline T dot(Vec<T2, 0>) const { return (T)0; }
 		inline T length2() const { return (T)0; }
+
+		inline bool less(Vec) const { return false; }
 
 #define BINARY_VEC_OPERATOR(OP) template<typename T2> inline Vec<decltype(T() OP T2()),0> operator OP (const Vec<T2,0> b) const { return Vec<decltype(T() OP T2()),0>(); }
 #define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,0> operator OP (const Vec<T2,0>& b) const { return Vec<bool,0>(); }
@@ -204,6 +209,11 @@ namespace hct
 		inline T reduce_add() const { return vec_operation_helper<T>::add( val , Vec<T, D - 1>::reduce_add() ); }
 		inline bool reduce_and() const { return (static_cast<bool>(val) && Vec<T, D - 1>::reduce_and()); }
 		inline bool reduce_or() const { return (static_cast<bool>(val) || Vec<T, D - 1>::reduce_and()); }
+		inline T reduce_max() const { return std::max(val, Vec<T, D - 1>::reduce_max()); }
+
+		// Valeur absolue
+		inline Vec abs() const { return Vec( std::abs(val), Vec<T, D - 1>::abs()); }
+
 
 		// operations algebriques
 		template<typename T2> inline T dot(const Vec<T2, D>& op) const { return (T)((val*op.val) + Vec<T, D - 1>::dot(op)); }
@@ -212,6 +222,9 @@ namespace hct
 		// min/max composante a composante
 		template<typename T2> inline Vec min(const Vec<T2, D>& op) const { return (val <= op.val) ? Vec(val, Vec<T, D - 1>::min(op)) : Vec(op.val, Vec<T, D - 1>::min(op)); }
 		template<typename T2> inline Vec max(const Vec<T2, D>& op) const { return (val >= op.val) ? Vec(val, Vec<T, D - 1>::max(op)) : Vec(op.val, Vec<T, D - 1>::max(op)); }
+
+		// lexicographic order (equivalent to '<' for basic types)
+		inline bool less(const Vec& v) const { return val<v.val || ( val==v.val && Vec<T, D - 1>::less(v) ); }
 
 #define BINARY_VEC_OPERATOR(OP) \
 	template<typename T2> inline \
