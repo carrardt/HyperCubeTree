@@ -226,6 +226,8 @@ namespace hct
 		// lexicographic order (equivalent to '<' for basic types)
 		inline bool less(const Vec& v) const { return val<v.val || ( val==v.val && Vec<T, D - 1>::less(v) ); }
 
+		static inline bool less_operator(const Vec& a, const Vec& b) { return a.less(b); }
+
 #define BINARY_VEC_OPERATOR(OP) \
 	template<typename T2> inline \
 	Vec<decltype(T() OP T2()),D> \

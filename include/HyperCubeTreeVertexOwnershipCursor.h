@@ -5,6 +5,7 @@
 #include "HyperCubeNeighbor.h"
 #include "HyperCubeTreeNeighborCursor.h"
 
+#include <array>
 #include <assert.h>
 
 namespace hct
@@ -24,29 +25,23 @@ namespace hct
 		using SubdivisionGrid = typename Tree::SubdivisionGrid;
 		using GridLocation = typename Tree::GridLocation;
 		using HCubeComponentValue = typename SuperClass::HCubeComponentValue;
+		using OwnershipArray = std::array<bool, NumberOfVertices>;
 
 		// initialization constructors
-		inline HyperCubeTreeVertexOwnershipCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
+		inline HyperCubeTreeVertexOwnershipCursor(const Tree& tree, hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
 			: SuperClass(cell)
-			, m_nOwnVertices(0)
 		{
-			computeOwnership();
+			computeOwnership(tree);
 		}
 
 		// recursion constructor
 		inline HyperCubeTreeVertexOwnershipCursor(Tree& tree, const HyperCubeTreeVertexOwnershipCursor& parent, SubdivisionGrid grid, GridLocation childLocation)
 			: SuperClass(tree,parent,grid, childLocation)
-			, m_nOwnVertices(0)
 		{
-			computeOwnership();
+			computeOwnership(tree);
 		}
 
-		inline size_t getNumberOfOwnedVertices() const
-		{
-			return m_nOwnVertices;
-		}
-
-		inline size_t getOwnVertex(size_t i) const
+		inline bool ownsVertex(size_t i) const
 		{
 			return m_ownVertex[i];
 		}
@@ -54,92 +49,120 @@ namespace hct
 	private:
 
 		template<typename _M>
+		struct LooseOwnershipFunctor
+		{
+			inline LooseOwnershipFunctor(OwnershipArray& ownership)	: m_ownVertex(ownership) {}
+			template<typename VertBF> inline void operator () (VertBF)
+			{
+				m_ownVertex[VertBF::BITFIELD] = false;
+			}
+			OwnershipArray& m_ownVertex;
+		};
+
+		template<typename _M>
 		struct NeighborComponentVertexFunctor
 		{
 			using CompBF = typename hct::HyperCube<HCubeComponentValue, 0, _M>::Mask;
 
-			inline NeighborComponentVertexFunctor(HyperCubeTreeVertexOwnershipCursor& cursor, hct::HyperCube<HCubeComponentValue, 0, _M>& neighbor, Cell* owner)
+			inline NeighborComponentVertexFunctor(HyperCubeTreeVertexOwnershipCursor& cursor, hct::HyperCube<HCubeComponentValue, 0, _M>& neighbor, OwnershipArray& ownership)
 				: m_cursor(cursor)
 				, m_neighbor(neighbor)
-				, m_owner(owner)
+				, m_ownVertex(ownership)
 			{}
 
+			/*
+			prerequisites :
+				neighbor is a tree cell (not nil)
+				neighbor is a leaf
+				current cell is a leaf
+			*/
 			template<typename VertBF> inline void operator () (VertBF)
 			{
+				// Note : this shoud be even more trivial.
+				// if we state that (meVertexPos == nbVertexPos).reduce_and() must be true, cell and neighbor have the same level,
+				// then we could just determine nbCellPos.less(meCellPos) from CompBF/VertBF
+
 				// VertBF => considered vertex
 				// m_cursor => global info about traversed cell of interest
 				// m_neighbor => neighbor potentially sharing considered vertex
-				hct::HyperCubeTreeCell meCell = m_cursor.cell();
-				hct::HyperCubeTreeCell nbCell = m_neighbor.value.m_cell;
-				if (nbCell.isTreeCell() && nbCell.level() == meCell.level())
-				{
-					size_t meVertex = VertBF::BITFIELD;
-					size_t compMask = CompBF::DEF_BITFIELD;
-					size_t nbVertex = meVertex ^ compMask;
-					hct::Vec<size_t, D> meVertexPos = (m_cursor.position() + hct::bitfield_vec<D>(meVertex)) *  m_neighbor.value.m_resolution;
-					hct::Vec<size_t, D> nbVertexPos = (m_neighbor.value.m_position + hct::bitfield_vec<D>(nbVertex)) * m_cursor.resolution();
+				size_t meVertex = VertBF::BITFIELD;
+				size_t compMask = CompBF::DEF_BITFIELD;
+				size_t nbVertex = meVertex ^ compMask;
+				hct::Vec<size_t, D> meVertexPos = (m_cursor.position() + hct::bitfield_vec<D>(meVertex)) *  m_neighbor.value.m_resolution;
+				hct::Vec<size_t, D> nbVertexPos = (m_neighbor.value.m_position + hct::bitfield_vec<D>(nbVertex)) * m_cursor.resolution();
 
-					if ((meVertexPos == nbVertexPos).reduce_and())
+				assert( (meVertexPos == nbVertexPos).reduce_and() );
+				if ((meVertexPos == nbVertexPos).reduce_and()) // if me and neighbor share this vertex and both are leaves, then ...
+				{
+					hct::Vec<size_t, D> meCellPos = m_cursor.position() *  m_neighbor.value.m_resolution;
+					hct::Vec<size_t, D> nbCellPos = m_neighbor.value.m_position * m_cursor.resolution();
+					if ( nbCellPos.less(meCellPos) ) // neighbor has priority, i loose ownership
 					{
-						hct::Vec<size_t, D> meCellPos = m_cursor.position() *  m_neighbor.value.m_resolution;
-						hct::Vec<size_t, D> nbCellPos = m_neighbor.value.m_position * m_cursor.resolution();
-						if (!tree.isLeaf(nbCell) || nbCellPos.less(meCellPos))
-						{
-							m_owner[meVertex] = HyperCubeTreeCell::nil();
-						}
+						m_ownVertex[meVertex] = false;
 					}
 				}
 			}
 
 			HyperCubeTreeVertexOwnershipCursor& m_cursor;
 			hct::HyperCube<HCubeComponentValue, 0, _M>& m_neighbor;
-			Cell* m_owner;
+			OwnershipArray& m_ownVertex;
 		};
 
 		struct NeighborComponentFunctor
 		{
-			inline NeighborComponentFunctor(HyperCubeTreeVertexOwnershipCursor& cursor, Cell* owner)
-				: m_cursor(cursor)
-				, m_owner(owner)
+			inline NeighborComponentFunctor(const Tree& tree, HyperCubeTreeVertexOwnershipCursor& cursor, OwnershipArray& ownership)
+				: m_tree(tree)
+				, m_cursor(cursor)
+				, m_ownVertex(ownership)
 			{}
 
+			/*
+			prerequistes :
+				current cell is a leaf (otherwise all vertices ownership is lost)
+			*/
 			template<typename _M>
 			inline void operator () (hct::HyperCube<HCubeComponentValue, 0, _M>& neighbor)
 			{
 				using HCubeComp = typename hct::HyperCube<HCubeComponentValue, 0, _M>::Mask;
-				if (HCubeComp::N_DEF > 0)
+				if (HCubeComp::N_DEF > 0) // neighbor is not myself
 				{
-					HCubeComp::enumerate(NeighborComponentVertexFunctor<_M>(m_cursor, neighbor, m_owner));
-				}
-			}
-
-			HyperCubeTreeVertexOwnershipCursor& m_cursor;
-			Cell* m_owner;
-		};
-
-		void computeOwnership()
-		{
-			m_nOwnVertices = 0;
-			if (tree.isLeaf(SuperClass::cell()))
-			{
-				for (size_t i = 0; i < NumberOfVertices; i++)
-				{
-					m_ownVertex[i] = i;
-				}
-				SuperClass::m_nbh.forEachComponent(NeighborComponentFunctor(*this, owner));
-				for (size_t i = 0; i < NumberOfVertices; i++)
-				{
-					if (m_ownVertex[i] != -1)
+					// if neighbor is not a tree cell (e.g. nil), it cannot still any ownership
+					if (neighbor.value.m_cell.isTreeCell())
 					{
-						m_ownVertex[m_nOwnVertices] = m_ownVertex[i];
-						++m_nOwnVertices;
+						// if neighbor has sub-cells, then it sub-cells wil still all shared vertices ownership
+						if (!m_tree.isLeaf(neighbor.value.m_cell))
+						{
+							assert(neighbor.value.m_cell.level() == m_cursor.cell().level());
+							HCubeComp::enumerate(LooseOwnershipFunctor<_M>(m_ownVertex));
+						}
+						else if( neighbor.value.m_cell.level() == m_cursor.cell().level() )
+						{
+							// neighbor can still ownership only if it has the same level (not coarser)
+							HCubeComp::enumerate(NeighborComponentVertexFunctor<_M>(m_cursor, neighbor, m_ownVertex));
+						}
 					}
 				}
 			}
+
+			const Tree& m_tree;
+			HyperCubeTreeVertexOwnershipCursor& m_cursor;
+			OwnershipArray& m_ownVertex;
+		};
+
+		void computeOwnership(const Tree& tree)
+		{
+			if (tree.isLeaf(SuperClass::cell()))
+			{
+				m_ownVertex.fill(true);
+				SuperClass::m_nbh.forEachComponent(NeighborComponentFunctor(tree,*this, m_ownVertex));
+			}
+			else
+			{
+				m_ownVertex.fill(false);
+			}
 		}
 
-		size_t m_nOwnVertices;
-		int64_t m_ownVertex[NumberOfVertices];
+		OwnershipArray m_ownVertex;
 	};
 
 }
