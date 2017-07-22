@@ -121,7 +121,7 @@ namespace hct
 		}
 
 		template<typename CellFuncT, typename CellCursorT=DefaultTreeCursor>
-		inline void preorderParseCells(CellFuncT f, CellCursorT cursor = CellCursorT() )
+		inline void preorderParseCells(CellFuncT f, const CellCursorT& cursor = CellCursorT() )
 		{
 			f(cursor);
 			if (!isLeaf(cursor.cell()))

@@ -1,6 +1,9 @@
 #include "Vec.h"
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <array>
+#include <set>
 using namespace std;
 
 using namespace hct;
@@ -44,6 +47,18 @@ int main()
   {
 	  auto vertex = hct::bitfield_vec<3>(i);
 	  std::cout << "bitfield(" << i << ") = " << vertex << std::endl;
+  }
+
+  cout << "test ordering\n";
+  std::set<Vec3d, decltype(&Vec3d::less_operator)> vecset( & Vec3d::less_operator );
+  for (size_t i = 0; i < 20; i++)
+  {
+	  double r[3] = { ((double)rand()) / RAND_MAX , ((double)rand()) / RAND_MAX , ((double) rand()) / RAND_MAX };
+	  vecset.insert( Vec3d(r) );
+  }
+  for (Vec3d v : vecset)
+  {
+	  cout << v << std::endl;
   }
 
   return 0;

@@ -3,9 +3,9 @@
 #include "GridDimension.h"
 #include "csg.h"
 #include "HyperCubeTreeLocatedCursor.h"
-#include "HyperCubeTreeNbhCursor.h"
+#include "HyperCubeTreeNeighborCursor.h"
 
-#include <iostream>
+#include <iostream> 
 
 using hct::Vec3d;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
@@ -18,9 +18,14 @@ struct CellVertices
 };
 
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
-using Tree = hct::HyperCubeTree< 3, SubdivisionScheme >;
+using Tree = hct::HyperCubeTree<3, SubdivisionScheme>;
 using TreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
-using NbhTreeCursor = hct::HyperCubeTreeNbhCursor<Tree>;
+using NbhTreeCursor = hct::HyperCubeTreeNeighborCursor<Tree>;
+
+
+// ==========================================================================
+// ============================ 1st testing method ==========================
+// ==========================================================================
 
 static void testTreeNeighborhood(Tree& tree)
 {
@@ -120,9 +125,9 @@ struct CompEnumFunc
 		{
 			Vec3d p = m_comp.m_cellVertices[meCell].m_vertices[meVertex];
 			Vec3d n = m_comp.m_cellVertices[nbCell].m_vertices[nbVertex];
-			double d = (n - p).dot(n - p); // TODO: replace this with L-inf norm (max component wise absolute difference)
+			double d = (n - p).abs().reduce_max(); // TODO: replace this with L-inf norm (max component wise absolute difference)
 			m_comp.m_maxVertexDist2 = std::max(d, m_comp.m_maxVertexDist2);
-			if (d > 1.e-19)
+			if (d > 1.e-16)
 			{
 				std::cout << "comp="; CompBF::toStream(std::cout);
 				std::cout << "meC=" << meCell << ", meV=" << meVertex << ", p=" << p << ", nbC=" << nbCell << ", nbV=" << nbVertex << ", n=" << n << ", d=" << d << std::endl;
@@ -212,28 +217,40 @@ static void testTreeNeighborhood2(Tree& tree)
 	std::cout << nbConnectedVertices << " connected vertices, max dist2 = " << maxVertexDist2 << "\n";
 }
 
+
+
+// ==========================================================================
+// ============================ test main ===================================
+// ==========================================================================
+
 int main()
 {
 	{
-		std::cout << "\ntest 1 :\n";
+		std::cout << "\ntest 1a :\n";
 		SubdivisionScheme subdivisions;
 		subdivisions.addLevelSubdivision({ 2,2,2 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
 		testTreeNeighborhood(tree);
+
+		std::cout << "\ntest 1b :\n";
+		testTreeNeighborhood2(tree);
 	}
 
 	{
-		std::cout << "\ntest 2 :\n";
+		std::cout << "\ntest 2a :\n";
 		SubdivisionScheme subdivisions;
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
 		testTreeNeighborhood(tree);
+
+		std::cout << "\ntest 2b :\n";
+		testTreeNeighborhood2(tree);
 	}
 
 	{
-		std::cout << "\ntest 3 :\n";
+		std::cout << "\ntest 3a :\n";
 		SubdivisionScheme subdivisions;
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
@@ -245,10 +262,13 @@ int main()
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
 		testTreeNeighborhood(tree);
+
+		std::cout << "\ntest 3b :\n";
+		testTreeNeighborhood2(tree);
 	}
 
 	{
-		std::cout << "\ntest 4 :\n";
+		std::cout << "\ntest 4a :\n";
 		SubdivisionScheme subdivisions;
 		subdivisions.addLevelSubdivision({ 4,4,20 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
@@ -260,10 +280,13 @@ int main()
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
 		testTreeNeighborhood(tree);
+
+		std::cout << "\ntest 4b :\n";
+		testTreeNeighborhood2(tree);
 	}
 
 	{
-		std::cout << "\ntest 5 A :\n";
+		std::cout << "\ntest 5a :\n";
 		SubdivisionScheme subdivisions;
 		subdivisions.addLevelSubdivision({ 4,4,20 });
 		subdivisions.addLevelSubdivision({ 3,3,3 });
@@ -312,7 +335,7 @@ int main()
 
 		testTreeNeighborhood(tree);
 
-		std::cout << "\ntest 5 B :\n";
+		std::cout << "\ntest 5b :\n";
 		testTreeNeighborhood2(tree);
 	}
 

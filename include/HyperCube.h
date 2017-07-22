@@ -86,6 +86,7 @@ namespace hct
 	  using T = _T;
 	  using Mask = _Mask;
 	  static constexpr unsigned int D = _D;
+	  static constexpr size_t NumberOfVertices = static_cast<size_t>(1) << D;
 
 	  HyperCube< T, D - 1, CBitField<Bit0, Mask> > _0; // Ensemble des elements dont le premier bit est contraint à 0
 	  HyperCube< T, D - 1, CBitField<BitX, Mask> > _X; // Ensemble des elements dont le premier bit est libre
