@@ -35,7 +35,7 @@ namespace hct
 		}
 
 		// recursion constructor
-		inline HyperCubeTreeVertexOwnershipCursor(Tree& tree, const HyperCubeTreeVertexOwnershipCursor& parent, SubdivisionGrid grid, GridLocation childLocation)
+		inline HyperCubeTreeVertexOwnershipCursor(const Tree& tree, const HyperCubeTreeVertexOwnershipCursor& parent, SubdivisionGrid grid, GridLocation childLocation)
 			: SuperClass(tree,parent,grid, childLocation)
 		{
 			computeOwnership(tree);

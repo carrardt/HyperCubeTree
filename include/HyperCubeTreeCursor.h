@@ -21,7 +21,7 @@ namespace hct
 		inline HyperCubeTreeCursor(HyperCubeTreeCell cell = HyperCubeTreeCell() )
 			: m_cell(cell) {}
 
-		inline HyperCubeTreeCursor(Tree& tree, HyperCubeTreeCursor parent, SubdivisionGrid grid, GridLocation childLocation)
+		inline HyperCubeTreeCursor(const Tree& tree, HyperCubeTreeCursor parent, SubdivisionGrid grid, GridLocation childLocation)
 			: m_cell(tree.child(parent.cell(), grid.branch(childLocation))) {}
 		
 		inline HyperCubeTreeCell cell() const { return m_cell; }

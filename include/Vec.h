@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <cmath>
+#include <string>
 
 namespace hct
 {
@@ -46,7 +47,7 @@ namespace hct
 		template<typename T2> inline void fromArray(const T2*) const {}
 		static inline Vec<T, 0> fromBitfield(size_t) { return Vec<T, 0>(); }
 
-		template<typename StreamT> inline void toStream(StreamT& out) const {}
+		template<typename StreamT> inline void toStream(StreamT& out,const std::string&) const {}
 		inline Vec operator = (Vec) const { return Vec(); }
 
 		inline Vec reverse() const { return Vec(); }
@@ -166,11 +167,11 @@ namespace hct
 		}
 
 		// ecriture du vecteur dans un flot texte
-		template<typename StreamT> inline StreamT& toStream(StreamT& out) const
+		template<typename StreamT> inline StreamT& toStream(StreamT& out, const std::string& sep = ",") const
 		{
 			if (D > 1) {
-				Vec<T, D - 1>::toStream(out);
-				out << ',';
+				Vec<T, D - 1>::toStream(out,sep);
+				out << sep;
 			}
 			out << val;
 			return out;

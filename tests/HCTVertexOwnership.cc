@@ -129,8 +129,6 @@ int main()
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
 
-		Vec3d domainUnitSize(1.0);
-
 		auto sphereA = hct::csg_sphere(Vec3d({ 0.0,0.0,0.0 }), 1.0);
 		auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
 		auto shape = hct::csg_difference(sphereA, sphereB);

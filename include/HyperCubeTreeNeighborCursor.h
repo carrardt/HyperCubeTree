@@ -71,7 +71,7 @@ namespace hct
 		};
 
 		// recursion constructor
-		inline HyperCubeTreeNeighborCursor(Tree& tree, const HyperCubeTreeNeighborCursor& parent, SubdivisionGrid grid, GridLocation childLocation)
+		inline HyperCubeTreeNeighborCursor(const Tree& tree, const HyperCubeTreeNeighborCursor& parent, SubdivisionGrid grid, GridLocation childLocation)
 		{
 			assert(!tree.isLeaf(parent.cell()));
 			HyperCubeNeighbor<HCubeComponentValue, D>::dig(grid, parent.m_nbh, m_nbh, childLocation, AttachChildNeighborFunctor(tree) );

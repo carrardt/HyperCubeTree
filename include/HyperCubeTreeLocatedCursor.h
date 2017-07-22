@@ -27,7 +27,7 @@ struct HyperCubeTreeLocatedCursor : public hct::HyperCubeTreeCursor<_Tree>
 		, m_size(domainSize) {}
 
 	// recursion constructor
-	inline HyperCubeTreeLocatedCursor(Tree& tree, HyperCubeTreeLocatedCursor parent, SubdivisionGrid grid, GridLocation childLocation)
+	inline HyperCubeTreeLocatedCursor(const Tree& tree, HyperCubeTreeLocatedCursor parent, SubdivisionGrid grid, GridLocation childLocation)
 		: SuperClass(tree, parent, grid, childLocation)
 	{
 		m_size = parent.m_size / grid;
