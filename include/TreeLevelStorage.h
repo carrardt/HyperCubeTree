@@ -145,13 +145,19 @@ namespace hct
 				for (auto a : m_level_arrays) { a->erase(level, position, nElems); }
 			}
 
-			inline size_t addArray(ITreeLevelArray* a)
+			// does not actually add the array, but resizes it so that it fits the level sizes
+			inline void fitArray(ITreeLevelArray* a) const
 			{
 				a->setNumberOfLevels(getNumberOfLevels());
 				for (size_t i = 0; i < getNumberOfLevels(); i++)
 				{
-					a->resize(i,m_level_sizes[i]);
+					a->resize(i, m_level_sizes[i]);
 				}
+			}
+
+			inline size_t addArray(ITreeLevelArray* a)
+			{
+				fitArray(a);
 				m_level_arrays.push_back(a);
 				return m_level_arrays.size() - 1;
 			}

@@ -18,7 +18,6 @@ namespace hct
 			4. Let C_i be the cells sharing a vertex V, then MIN_i( level(C_i) ) = level( owner(V) )
 	*/
 
-
 	/*
 	Essentially identical to HyperCubeTreeNeighborCursor, except it keeps track of vertex ownership
 	*/

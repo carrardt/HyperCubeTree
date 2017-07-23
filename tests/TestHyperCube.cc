@@ -16,6 +16,18 @@ struct PrintCBitField
 	ostream& out;
 };
 
+struct PrintHCubeCompMask
+{
+	inline PrintHCubeCompMask(ostream& o) : out(o) {}
+	template<typename _T, typename _M> inline void operator () ( hct::HyperCube<_T, 0, _M> )
+	{
+		hct::HyperCube<_T, 0, _M>::Mask::toStream(out);
+		out << ' ';
+	}
+	ostream& out;
+};
+
+
 struct PrintComponent
 {
 	ostream& out;
@@ -59,11 +71,11 @@ int main()
 
 	{
 		HyperCube<int64_t, 3> hc3(-1);
-		hc3.forEachVertex([](size_t i, int64_t& c) { c=i; });
+		hc3.forEachVertexValue([](size_t i, int64_t& c) { c=i; });
 		cout << "test forEachValue on a 3-cube:\n";
 		hc3.forEachValue([](int64_t c) { cout<<"value "<<c<<'\n'; });
 		cout << "test forEachVertex on a 3-cube:\n";
-		hc3.forEachVertex([](size_t i, int64_t c) { cout << "vertex " << i << " = " << c << '\n'; });
+		hc3.forEachVertexValue([](size_t i, int64_t c) { cout << "vertex " << i << " = " << c << '\n'; });
 	}
 
 	{
@@ -71,7 +83,7 @@ int main()
 		HyperCube<int64_t, 3> hc3(-1);
 		int i = 0;
 		hc3.forEachValue([&i](int64_t& c) { c = i++; });
-		hc3.forEachVertex([](int64_t i, int64_t& c) { c = -i; });
+		hc3.forEachVertexValue([](int64_t i, int64_t& c) { c = -i; });
 #		define TEST_OPERATOR(c,b,a) \
 		using _##a##b##c = CBitField< Bit##a, CBitField< Bit##b, CBitField< Bit##c, NullBitField > > >; \
 		cout << "Bitfield = "; _##a##b##c::toStream(cout); cout<<" / "<<_##a##b##c::BITFIELD << " => " << hc3[_##a##b##c()] << endl
@@ -102,6 +114,25 @@ int main()
 		TEST_OPERATOR(X, X, 0);
 		TEST_OPERATOR(X, X, 1);
 		TEST_OPERATOR(X, X, X);
+#		undef TEST_OPERATOR
+	}
+
+	{
+		cout << "test forEachVertexComponent:\n";
+		HyperCube<bool, 3> hc3(false);
+		hc3.forEachVertexValue([](int64_t i, bool& c) { c = true; });
+#		define TEST_OPERATOR(c,b,a) \
+		using _##a##b##c = CBitField< Bit##a, CBitField< Bit##b, CBitField< Bit##c, NullBitField > > >; \
+		cout << "components for vertex "; _##a##b##c::toStream(cout); cout<<" : "; \
+		hc3.forEachComponentSharingVertex( _##a##b##c(), PrintHCubeCompMask(std::cout) ); cout<<endl
+		TEST_OPERATOR(0, 0, 0);
+		TEST_OPERATOR(0, 0, 1);
+		TEST_OPERATOR(0, 1, 0);
+		TEST_OPERATOR(0, 1, 1);
+		TEST_OPERATOR(1, 0, 0);
+		TEST_OPERATOR(1, 0, 1);
+		TEST_OPERATOR(1, 1, 0);
+		TEST_OPERATOR(1, 1, 1);
 #		undef TEST_OPERATOR
 	}
 

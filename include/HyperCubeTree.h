@@ -84,6 +84,11 @@ namespace hct
 			return m_storage.getNumberOfArrays() - 1;
 		}
 
+		inline void fitArray(ITreeLevelArray* a) const
+		{
+			m_storage.fitArray(a);
+		}
+
 		inline ITreeLevelArray* array(size_t i) const
 		{
 			assert(i < getNumberOfArrays());
@@ -154,6 +159,22 @@ namespace hct
 				});
 			}
 		}
+
+		// post-order, all cells
+		template<typename CellFuncT, typename CellCursorT = DefaultTreeCursor>
+		inline void postorderParseCells(CellFuncT f, const CellCursorT& cursor = CellCursorT()) const
+		{
+			if (!isLeaf(cursor.cell()))
+			{
+				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.cell().level());
+				ForEachGridLocation(grid, [this, grid, &f, &cursor](GridLocation loc)
+				{
+					preorderParseCells(f, CellCursorT(*this, cursor, grid, loc));
+				});
+			}
+			f(cursor);
+		}
+
 
 		// pre-order, leaves only
 		template<typename CellFuncT, typename CellCursorT = DefaultTreeCursor>

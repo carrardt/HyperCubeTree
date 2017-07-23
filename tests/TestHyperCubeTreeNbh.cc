@@ -80,7 +80,7 @@ static void testTreeNeighborhood(Tree& tree)
 	{
 		using HCubeComponentValue = typename NbhTreeCursor::HCubeComponentValue;
 		hct::HyperCubeTreeCell me = nbhCursor.cell();
-		nbhCursor.m_nbh.forEachVertex([me, &cellVertices, &nbConnectedVertices, &maxVertexDist2](size_t i, const HCubeComponentValue& neighbor)
+		nbhCursor.m_nbh.forEachVertexValue([me, &cellVertices, &nbConnectedVertices, &maxVertexDist2](size_t i, const HCubeComponentValue& neighbor)
 		{
 			if (neighbor.m_cell.isTreeCell() && neighbor.m_cell.level() == me.level())
 			{

@@ -16,7 +16,7 @@ namespace hct
 	Constituants of an Hyper Cube are denoted by succession of ternary digits : 0, 1 and X.
 	For instance, the faces (2-cubes) of a 3-cube are :
 	(X,X,0) ; (X,X,1) ; (X,0,X) ; (X,1,X) ; (0,X,X) ; (1,X,X).
-	this means that in a cube, the face are the object where 2 out of 3 coordinates are "free" (denoted by X)
+	this means that in a cube, the faces are the object where 2 out of 3 coordinates are "free" (denoted by X)
 	and one coordinate has to be fixed. the vertices will be all possible coordinates :
 	(0,0,0) ; (0,0,1) ; (0,1,0) ...
 
@@ -50,6 +50,9 @@ namespace hct
 	  inline T& self() { return value; }
 	  inline const T& self() const { return value; }
 
+
+	  // FIXME: rename and clarify methods : clear naming convention and both templated/fixed type functors
+
 	  template<typename FuncT> inline void forEachComponent(FuncT f) const
 	  { 
 		  f(*this);
@@ -59,6 +62,17 @@ namespace hct
 		  f(*this); 
 	  }
 
+	  // =============== iterate over components sharing a specific vertex ===============
+	  template<typename FuncT> inline void forEachComponentSharingVertex(NullBitField, FuncT f)
+	  {
+		  f(*this);
+	  }
+	  template<typename FuncT> inline void forEachComponentSharingVertex(NullBitField, FuncT f) const
+	  {
+		  f(*this);
+	  }
+
+	  // ==================== iterate over all values =============================
 	  template<typename FuncT> inline void forEachValue(FuncT f) const 
 	  { 
 		  f(value); 
@@ -68,14 +82,28 @@ namespace hct
 		  f(value); 
 	  }
 
-	  template<typename FuncT> inline void forEachVertex(FuncT f) const
+	  // ================= iterate over all vertices ==================
+	  // fixed type functor
+	  template<typename FuncT> inline void forEachVertexValue(FuncT f) const
 	  { 
 		 f(Mask::BITFIELD, value); 
 	  }
-	  template<typename FuncT> inline void forEachVertex(FuncT f) 
+	  template<typename FuncT> inline void forEachVertexValue(FuncT f)
 	  { 
 		  f(Mask::BITFIELD, value);
 	  }
+
+	  // ================= iterate over all vertices ===================
+	  // templated functor
+	  template<typename FuncT> inline void forEachVertexComponent(FuncT f) const
+	  {
+		  f(value, Mask() );
+	  }
+	  template<typename FuncT> inline void forEachVertexComponent(FuncT f)
+	  {
+		  f(value, Mask() );
+	  }
+
 
 	  inline T& operator [] (NullBitField) { return value; }
 	  inline const T& operator [] (NullBitField) const { return value; }
@@ -123,6 +151,23 @@ namespace hct
 		  _1.forEachComponent(f);
 	  }
 
+	  // =============== iterate over components sharing a specific vertex ===============
+	  template<typename VertBF, typename FuncT>
+	  inline void forEachComponentSharingVertex(VertBF, FuncT f)
+	  {
+		  if (VertBF::Bit::ZERO) { _0.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
+		  _X.forEachComponentSharingVertex(typename VertBF::Tail(), f);
+		  if (VertBF::Bit::ONE) { _1.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
+	  }
+	  template<typename VertBF, typename FuncT>
+	  inline void forEachComponentSharingVertex(VertBF, FuncT f) const
+	  {
+		  if (VertBF::Bit::ZERO) { _0.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
+		  _X.forEachComponentSharingVertex(typename VertBF::Tail(), f);
+		  if (VertBF::Bit::ONE) { _1.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
+	  }
+
+
 	  // =============== iterate over all the values stored for each component ============
 	  template<typename FuncT>
 	  inline void forEachValue(FuncT f)
@@ -141,19 +186,33 @@ namespace hct
 	  }
 
 	  // =============== iterate over all the vertices (0-D components) ============
+	  // non templated functor
 	  template<typename FuncT>
-	  inline void forEachVertex(FuncT f)
+	  inline void forEachVertexValue(FuncT f)
 	  {
-		  _0.forEachVertex(f);
-		  _1.forEachVertex(f);
+		  _0.forEachVertexValue(f);
+		  _1.forEachVertexValue(f);
+	  }
+	  template<typename FuncT>
+	  inline void forEachVertexValue(FuncT f) const
+	  {
+		  _0.forEachVertexValue(f);
+		  _1.forEachVertexValue(f);
 	  }
 
-	  template<typename FuncT>
-	  inline void forEachVertex(FuncT f) const
+	  // =============== iterate over all the vertices (0-D components) ============
+	  // templated functor
+	  template<typename FuncT> inline void forEachVertexComponent(FuncT f) 
 	  {
-		  _0.forEachVertex(f);
-		  _1.forEachVertex(f);
+		  _0.forEachVertexComponent(f);
+		  _1.forEachVertexComponent(f);
 	  }
+	  template<typename FuncT> inline void forEachVertexComponent(FuncT f) const
+	  {
+		  _0.forEachVertexComponent(f);
+		  _1.forEachVertexComponent(f);
+	  }
+ 
 
 	  // address sub element with a bitfield
 	  template<typename Tail> inline T& operator [] (CBitField<Bit0,Tail>) { return _0[Tail()]; }

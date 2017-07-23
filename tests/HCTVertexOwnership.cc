@@ -19,7 +19,7 @@ using HCTVertexOwnershipCursor = hct::HyperCubeTreeVertexOwnershipCursor<Tree>;
 // =============================== test method ==============================
 // ==========================================================================
 
-static void testTreeVertexOwnership(Tree& tree)
+static size_t testTreeVertexOwnership(Tree& tree)
 {
 	tree.toStream(std::cout);
 
@@ -52,13 +52,7 @@ static void testTreeVertexOwnership(Tree& tree)
 	// all vertices must be owned, they must be owned by exactly one cell
 	assert(nbOwnedVertices == posSet.size());
 
-	/*if (posSet.size() < 100)
-	{
-		for (Vec3d p : posSet)
-		{
-			std::cout << p << std::endl;
-		}
-	}*/
+	return nbOwnedVertices;
 }
 
 
@@ -74,7 +68,7 @@ int main()
 		subdivisions.addLevelSubdivision({ 2,2,2 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
-		testTreeVertexOwnership(tree);
+		assert( testTreeVertexOwnership(tree) == 27 );
 	}
 
 	{
@@ -83,7 +77,7 @@ int main()
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
-		testTreeVertexOwnership(tree);
+		assert( testTreeVertexOwnership(tree) == 64);
 	}
 
 	{
@@ -98,7 +92,7 @@ int main()
 		{
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
-		testTreeVertexOwnership(tree);
+		assert( testTreeVertexOwnership(tree) == 1000 );
 	}
 
 	{
@@ -113,7 +107,7 @@ int main()
 		{
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
-		testTreeVertexOwnership(tree);
+		assert( testTreeVertexOwnership(tree) == 10309 );
 	}
 
 	{
@@ -162,7 +156,7 @@ int main()
 		}
 		, HCTVertexOwnershipCursor(tree) );
 
-		testTreeVertexOwnership(tree);
+		assert( testTreeVertexOwnership(tree) == 5292121);
 	}
 
 	return 0;
