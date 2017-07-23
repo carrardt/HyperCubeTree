@@ -10,6 +10,14 @@
 
 namespace hct
 {
+	/*
+		Important statements :
+			1. Owner (a cell) of a vertex is a leaf of the tree
+			2. Ownership changes if tree topologie changes (refinment, corsening, etc.)
+			3. A vertex is owned by exactly one (leaf) cell
+			4. Let C_i be the cells sharing a vertex V, then MIN_i( level(C_i) ) = level( owner(V) )
+	*/
+
 
 	/*
 	Essentially identical to HyperCubeTreeNeighborCursor, except it keeps track of vertex ownership

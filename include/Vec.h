@@ -314,3 +314,17 @@ namespace hct
 
 }; // namespace hct
 
+// specializing std::less for Vec<D,T>
+namespace std
+{
+	template<typename T, unsigned int D>
+	struct less< hct::Vec<T, D> >
+	{
+		using VecT = hct::Vec<T, D>;
+		inline bool operator () (const VecT& lhs, const VecT& rhs ) const
+		{
+			return lhs.less(rhs);
+		}
+	};
+}
+

@@ -3,6 +3,7 @@
 #include "GridDimension.h"
 #include <vector>
 #include <initializer_list>
+#include <cstdlib>
 
 namespace hct
 {
@@ -11,6 +12,7 @@ namespace hct
 	{
 		static constexpr unsigned int D = _D;
 	public:
+
 		inline void addLevelSubdivision(std::initializer_list<unsigned int> l)
 		{
 			addLevelSubdivision(GridDimension<D>(l));
@@ -41,6 +43,31 @@ namespace hct
 				++i;
 			}
 			return out;
+		}
+
+		template<typename StreamT>
+		inline void fromStream(StreamT & input)
+		{
+			bool endInput = false;
+			while (input && !endInput)
+			{
+				std::string token;
+				input >> token;
+				if (token == "end")
+				{
+					endInput = true;
+				}
+				else if (token == "grid")
+				{
+					unsigned int grid[D];
+					for (size_t i = 0; i < D; i++) { grid[i] = 0;  input >> grid[i]; }
+					addLevelSubdivision(GridDimension<D>(grid));
+				}
+				else
+				{
+					std::abort();
+				}
+			}
 		}
 
 	private:

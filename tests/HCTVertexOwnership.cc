@@ -24,9 +24,9 @@ static void testTreeVertexOwnership(Tree& tree)
 	tree.toStream(std::cout);
 
 	size_t nbOwnedVertices = 0;
-	std::set<hct::Vec3d, decltype(&hct::Vec3d::less_operator)> posSet(&hct::Vec3d::less_operator);
+	std::set<hct::Vec3d> posSet;
 
-	tree.preorderParseCells([&nbOwnedVertices,&posSet](const HCTVertexOwnershipCursor& cursor)
+	tree.preorderParseCells([&tree,&nbOwnedVertices,&posSet](const HCTVertexOwnershipCursor& cursor)
 	{
 		using HCubeComponentValue = typename HCTVertexOwnershipCursor::HCubeComponentValue;
 		constexpr size_t CellNumberOfVertices = 1 << Tree::D;
@@ -38,6 +38,8 @@ static void testTreeVertexOwnership(Tree& tree)
 			posSet.insert(p);
 			if (cursor.ownsVertex(i))
 			{
+				// asertion must be true, according to statement 1. in HyperCubeTreeVertexOwnershipCursor.h
+				assert( tree.isLeaf(cursor.cell()) );
 				++nbOwnedVertices;
 			}
 		}
@@ -47,6 +49,7 @@ static void testTreeVertexOwnership(Tree& tree)
 	std::cout << "different vertices = " << posSet.size() << std::endl;
 	std::cout << "owned vertices = " << nbOwnedVertices << std::endl;
 
+	// all vertices must be owned, they must be owned by exactly one cell
 	assert(nbOwnedVertices == posSet.size());
 
 	/*if (posSet.size() < 100)

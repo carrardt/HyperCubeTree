@@ -2,6 +2,7 @@
 #include "SimpleSubdivisionScheme.h"
 #include "GridDimension.h"
 #include "HyperCubeTreeVertexOwnershipCursor.h"
+#include "HyperCubeTreeLocatedCursor.h"
 #include "csg.h"
 #include "csg_input.h"
 #include "vtkLegacyExport.h"
@@ -15,23 +16,29 @@ using hct::Vec3d;
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 using Tree = hct::HyperCubeTree<3, SubdivisionScheme>;
 using HCTVertexOwnershipCursor = hct::HyperCubeTreeVertexOwnershipCursor<Tree>;
+using LocatedTreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
 
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
 
 int main(int argc, char* argv[])
 {
-	if (argc < 3)
+	if (argc < 4)
 	{
-		std::cout << "Usage : "<<argv[0]<<" input.csg output.vtk" << std::endl;
+		std::cout << "Usage : "<<argv[0]<<" levels.div input.csg output.vtk" << std::endl;
 		return 1;
 	}
 
+	std::ifstream levels_input(argv[1]);
+	if (!levels_input)
+	{
+		std::cerr << "Error opening file '" << argv[1] << "'" << std::endl;
+		return 1;
+	}
+	std::cout << "read levels from " << argv[1] << '\n';
+	std::cout.flush();
 	SubdivisionScheme subdivisions;
-	subdivisions.addLevelSubdivision({ 8,8,8 });
-	subdivisions.addLevelSubdivision({ 3,3,3 });
-	subdivisions.addLevelSubdivision({ 3,3,3 });
-	subdivisions.addLevelSubdivision({ 3,3,3 });
-	subdivisions.addLevelSubdivision({ 3,3,3 });
+	subdivisions.fromStream(levels_input);
+
 	Tree tree(subdivisions);
 	tree.refine(tree.rootCell());
 	size_t nbRootChildren = subdivisions.getLevelSubdivision(0).gridSize();
@@ -40,16 +47,20 @@ int main(int argc, char* argv[])
 		tree.refine(tree.child(tree.rootCell(), i));
 	}
 
-	std::ifstream input(argv[1]);
+	std::ifstream input(argv[2]);
 	if (!input)
 	{
-		std::cerr<<"Error opening file '"<<argv[1]<<"'"<< std::endl;
+		std::cerr<<"Error opening file '"<<argv[2]<<"'"<< std::endl;
 		return 1;
 	}
-	std::cout << "read surface from '" << argv[1] << "'" << std::endl;
+	std::cout << "read CSG from '" << argv[2] << "'" << std::endl;
+	std::cout.flush();
 	auto shape = hct::csg_input<3>(input);
 
 	// refine tree given an implicit surface
+	std::cout << "build tree\n";
+	std::cout.flush();
+
 	tree.preorderParseCells([shape, &tree](const HCTVertexOwnershipCursor& cursor)
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
@@ -74,15 +85,30 @@ int main(int argc, char* argv[])
 		}
 	}
 	, HCTVertexOwnershipCursor(tree));
+
+	// compute a scalar value derived from csg surface
+	hct::TreeLevelArray<double> cellSurfaceDistance;
+	cellSurfaceDistance.setName("surf_dist");
+	tree.addArray(&cellSurfaceDistance);
+	cellSurfaceDistance.fill(1000.0);
+
+	tree.preorderParseLeaves([shape,&cellSurfaceDistance](const LocatedTreeCursor& cursor)
+	{
+		hct::HyperCubeTreeCell cell = cursor.cell();
+		Vec3d p = cursor.m_origin + ( cursor.m_size * 0.5 );
+		cellSurfaceDistance[cell] = shape(p);
+	}
+	, LocatedTreeCursor(Vec3d(1.0)) );
+
 	tree.toStream(std::cout);
 
-	std::ofstream output(argv[2]);
+	std::ofstream output(argv[3]);
 	if (!output)
 	{
-		std::cerr << "Error opening file '" << argv[2] << "'" << std::endl;
+		std::cerr << "Error opening file '" << argv[3] << "'" << std::endl;
 		return 1;
 	}
-	std::cout<<"output unstructured grid to "<<argv[2] << std::endl;
+	std::cout<<"output unstructured grid to "<<argv[3] << std::endl;
 	hct::vtk::exportUnstructuredGrid(tree, output);
 
 	return 0;

@@ -48,13 +48,20 @@ namespace hct
 		{
 			m_storage.setNumberOfLevels( m_subdivision_scheme.getNumberOfLevelSubdivisions() + 1 );
 			m_storage.resize(0, 1);
-			m_storage.addArray(&m_cell_child_index);
+			size_t childArrayIndex = m_storage.addArray(&m_cell_child_index);
+			assert(childArrayIndex == 0 ); // we assert this is true when indexing other arrays
+			m_cell_child_index.setName( "_ChilIndex" );
 			m_cell_child_index[rootCell()] = -1;
 		}
 
 		inline const SubdivisionSchemeT& getSubdivisionScheme() const
 		{
 			return m_subdivision_scheme;
+		}
+
+		inline size_t getNumberOfLevelSubdivisions() const
+		{
+			return m_subdivision_scheme.getNumberOfLevelSubdivisions();
 		}
 
 		inline SubdivisionGrid getLevelSubdivisionGrid(size_t level) const
@@ -67,9 +74,20 @@ namespace hct
 			return m_storage.getNumberOfLevels();
 		}
 
-		inline void addArray(ITreeLevelArray* a)
+		inline size_t addArray(ITreeLevelArray* a)
 		{
-			m_storage.addArray(a);
+			return m_storage.addArray(a);
+		}
+
+		inline size_t getNumberOfArrays() const
+		{
+			return m_storage.getNumberOfArrays() - 1;
+		}
+
+		inline ITreeLevelArray* array(size_t i) const
+		{
+			assert(i < getNumberOfArrays());
+			return m_storage.array(i + 1);
 		}
 
 		// returns true if cell is not a tree cell (nil, or ill-formed) or if it is a leaf;
@@ -120,6 +138,9 @@ namespace hct
 			}
 		}
 
+		//=================== tre traversal methods ================================
+
+		// pre-order, all cells
 		template<typename CellFuncT, typename CellCursorT=DefaultTreeCursor>
 		inline void preorderParseCells(CellFuncT f, const CellCursorT& cursor = CellCursorT() ) const
 		{
@@ -127,14 +148,32 @@ namespace hct
 			if (!isLeaf(cursor.cell()))
 			{
 				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.cell().level());
-				ForEachGridLocation(grid, [&](GridLocation loc)
-					{
+				ForEachGridLocation(grid, [this,grid,&f,&cursor](GridLocation loc)
+				{
 						preorderParseCells( f, CellCursorT(*this, cursor, grid, loc) );
-					}
-				);
+				});
 			}
 		}
 
+		// pre-order, leaves only
+		template<typename CellFuncT, typename CellCursorT = DefaultTreeCursor>
+		inline void preorderParseLeaves(CellFuncT f, const CellCursorT& cursor = CellCursorT()) const
+		{
+			if (isLeaf(cursor.cell()))
+			{
+				f(cursor);
+			}
+			else
+			{
+				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.cell().level());
+				ForEachGridLocation(grid, [this, grid, &f, &cursor](GridLocation loc)
+				{
+					preorderParseLeaves(f, CellCursorT(*this, cursor, grid, loc));
+				});
+			}
+		}
+
+		// =================== output a tree description to stream ======================
 		template<typename StreamT>
 		inline StreamT& toStream(StreamT & out)
 		{

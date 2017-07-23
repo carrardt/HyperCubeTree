@@ -17,6 +17,20 @@ struct CellVertices
 	hct::Vec<double, D> m_vertices[1 << D];
 };
 
+template<unsigned int D>
+inline std::ostream& operator << (std::ostream& out, const CellVertices<D>& cv)
+{ 
+	out << '{';
+	for (size_t i = 0; i < (1 << D); i++)
+	{
+		if (i > 0) { out << ','; }
+		out << '(' << cv.m_vertices[i] << ')';
+	}
+	out << '}';
+	return out;
+}
+
+
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 using Tree = hct::HyperCubeTree<3, SubdivisionScheme>;
 using TreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;

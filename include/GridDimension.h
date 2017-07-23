@@ -15,6 +15,7 @@ namespace hct
 		inline GridDimension() : Vec<unsigned int,1>(1) {}
 		inline GridDimension(Vec<unsigned int,1> v) : Vec<unsigned int,1>(v) {}
 		inline GridDimension(unsigned int v) : Vec<unsigned int,1>(v) {}
+		inline GridDimension(const unsigned int* l) : Vec<unsigned int, 1>(l) {}
 		inline GridDimension(std::initializer_list<unsigned int> l) : Vec<unsigned int,1>(l) {}
 
 		inline size_t branch(Vec<unsigned int,1> pos) const
@@ -40,6 +41,7 @@ namespace hct
 		static constexpr unsigned int D = _D;
       inline GridDimension() : Vec<unsigned int,D>(1) {}
       inline GridDimension(Vec<unsigned int,D> v) : Vec<unsigned int,D>(v) {}
+	  inline GridDimension(const unsigned int* l) : Vec<unsigned int, D>(l) {}
 	  inline GridDimension(unsigned int head, Vec<unsigned int,D-1> tail ) : Vec<unsigned int,D>(head,tail) {}
 	  inline size_t branch(Vec<unsigned int, D> pos) const
 	  {

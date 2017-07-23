@@ -6,6 +6,8 @@
 #include <vector>
 #include <cstring>
 #include <assert.h>
+#include <iostream>
+#include <string>
 
 namespace hct
 {
@@ -13,9 +15,11 @@ namespace hct
 	class ITreeLevelArray
 	{
 		public:
+			virtual std::string name() const = 0;
 			virtual void setNumberOfLevels(size_t nLevels) =0;
 			virtual void resize(size_t level, size_t nElems) =0;
 			virtual void erase(size_t level, size_t position, size_t nElems) =0;
+			virtual std::ostream& toStream(std::ostream&, HyperCubeTreeCell cell) const = 0;
 	};
 
 	template<typename T>
@@ -24,6 +28,17 @@ namespace hct
 		using ElementReference = typename std::vector<T>::reference;
 		using ConstElementReference = typename std::vector<T>::const_reference;
 		public:
+
+			inline void setName(const std::string& name)
+			{
+				m_name = name;
+			}
+
+			inline std::string name() const override final
+			{
+				return m_name;
+			}
+
 			inline void setNumberOfLevels(size_t nLevels) override final
 			{
 				m_arrays.resize(nLevels);
@@ -42,6 +57,17 @@ namespace hct
 				m_arrays[level].erase( m_arrays[level].begin()+position, m_arrays[level].begin()+position+nElems );
 			}
 			
+			inline void fill(const T& value)
+			{
+				for (auto& a : m_arrays) for (auto& x : a) { x = value; }
+			}
+
+			inline std::ostream& toStream(std::ostream& out, HyperCubeTreeCell cell) const override final
+			{
+				out << m_arrays[cell.level()][cell.index()];
+				return out;
+			}
+
 			inline const std::vector<T>& operator [] (size_t level) const
 			{
 				assert( level < m_arrays.size() );
@@ -81,6 +107,7 @@ namespace hct
 
 		private:
 			std::vector< std::vector<T> > m_arrays;
+			std::string m_name;
 	};
 
 	class TreeLevelStorage
@@ -118,7 +145,7 @@ namespace hct
 				for (auto a : m_level_arrays) { a->erase(level, position, nElems); }
 			}
 
-			inline void addArray(ITreeLevelArray* a)
+			inline size_t addArray(ITreeLevelArray* a)
 			{
 				a->setNumberOfLevels(getNumberOfLevels());
 				for (size_t i = 0; i < getNumberOfLevels(); i++)
@@ -126,6 +153,18 @@ namespace hct
 					a->resize(i,m_level_sizes[i]);
 				}
 				m_level_arrays.push_back(a);
+				return m_level_arrays.size() - 1;
+			}
+
+			inline size_t getNumberOfArrays() const
+			{
+				return m_level_arrays.size();
+			}
+
+			inline ITreeLevelArray* array(size_t i) const
+			{
+				assert(i<getNumberOfArrays());
+				return m_level_arrays[i];
 			}
 
 			template<typename StreamT>
