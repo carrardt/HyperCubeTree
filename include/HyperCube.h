@@ -50,29 +50,29 @@ namespace hct
 	  inline T& self() { return value; }
 	  inline const T& self() const { return value; }
 
-
-	  // FIXME: rename and clarify methods : clear naming convention and both templated/fixed type functors
-
+	  // ======================= iterate over all components ==============================
+	  // templated functor
 	  template<typename FuncT> inline void forEachComponent(FuncT f) const
 	  { 
-		  f(*this);
+		  f(value, Mask());
 	  }
 	  template<typename FuncT> inline void forEachComponent(FuncT f)
 	  { 
-		  f(*this); 
+		  f(value, Mask());
 	  }
 
 	  // =============== iterate over components sharing a specific vertex ===============
+	  // templated functor
 	  template<typename FuncT> inline void forEachComponentSharingVertex(NullBitField, FuncT f)
 	  {
-		  f(*this);
+		  f(value, Mask());
 	  }
 	  template<typename FuncT> inline void forEachComponentSharingVertex(NullBitField, FuncT f) const
 	  {
-		  f(*this);
+		  f(value, Mask());
 	  }
 
-	  // ==================== iterate over all values =============================
+	  // ========================= iterate over all values ===============================
 	  template<typename FuncT> inline void forEachValue(FuncT f) const 
 	  { 
 		  f(value); 
@@ -97,7 +97,7 @@ namespace hct
 	  // templated functor
 	  template<typename FuncT> inline void forEachVertexComponent(FuncT f) const
 	  {
-		  f(value, Mask() );
+		  f(value, Mask());
 	  }
 	  template<typename FuncT> inline void forEachVertexComponent(FuncT f)
 	  {

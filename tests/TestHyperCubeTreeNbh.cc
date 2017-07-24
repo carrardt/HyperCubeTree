@@ -109,14 +109,13 @@ static void testTreeNeighborhood(Tree& tree)
 
 template<unsigned int _D> struct Neighbor2ComponentFunctor;
 
-template<typename _M>
+template<typename CompBF>
 struct CompEnumFunc
 {
 	using HCubeComponentValue = typename NbhTreeCursor::HCubeComponentValue;
-	using CompBF = typename hct::HyperCube<HCubeComponentValue, 0, _M>::Mask;
 	static constexpr unsigned int D = CompBF::N_BITS;
 
-	inline CompEnumFunc(Neighbor2ComponentFunctor<D>& comp, hct::HyperCube<HCubeComponentValue, 0, _M>& neighbor)
+	inline CompEnumFunc(Neighbor2ComponentFunctor<D>& comp, HCubeComponentValue& neighbor)
 		: m_comp(comp)
 		, m_neighbor(neighbor) {}
 
@@ -125,15 +124,15 @@ struct CompEnumFunc
 		assert(VertBF::N_FREE == 0);
 		const HCubeComponentValue& me = m_comp.m_nbh.self();
 		hct::HyperCubeTreeCell meCell = me.m_cell;
-		hct::HyperCubeTreeCell nbCell = m_neighbor.value.m_cell;
+		hct::HyperCubeTreeCell nbCell = m_neighbor.m_cell;
 		assert(nbCell.isTreeCell());
 
 		size_t meVertex = VertBF::BITFIELD;
 		size_t compMask = CompBF::DEF_BITFIELD;
 		size_t nbVertex = meVertex ^ compMask;
 
-		hct::Vec<size_t, D> meVertexPos = ( me.m_position + hct::bitfield_vec<D>(meVertex) ) *  m_neighbor.value.m_resolution ;
-		hct::Vec<size_t, D> nbVertexPos = ( m_neighbor.value.m_position + hct::bitfield_vec<D>(nbVertex) ) * me.m_resolution ;
+		hct::Vec<size_t, D> meVertexPos = ( me.m_position + hct::bitfield_vec<D>(meVertex) ) *  m_neighbor.m_resolution ;
+		hct::Vec<size_t, D> nbVertexPos = ( m_neighbor.m_position + hct::bitfield_vec<D>(nbVertex) ) * me.m_resolution ;
 
 		if ((meVertexPos == nbVertexPos).reduce_and())
 		{
@@ -152,7 +151,7 @@ struct CompEnumFunc
 	}
 
 	Neighbor2ComponentFunctor<D>& m_comp;
-	hct::HyperCube<HCubeComponentValue, 0, _M>& m_neighbor;
+	HCubeComponentValue& m_neighbor;
 };
 
 template<unsigned int _D>
@@ -169,13 +168,12 @@ struct Neighbor2ComponentFunctor
 		, m_nbConnectedVertices(nbConnectedVertices)
 		, m_maxVertexDist2(maxVertexDist2) {}
 
-	template<typename _M>
-	inline void operator () ( hct::HyperCube<HCubeComponentValue, 0, _M>& neighbor)
+	template<typename HCubeComp>
+	inline void operator () (HCubeComponentValue& neighbor, HCubeComp)
 	{
-		using HCubeComp = typename hct::HyperCube<HCubeComponentValue, 0, _M>::Mask;
-		if ( neighbor.value.m_cell.isTreeCell() )
+		if ( neighbor.m_cell.isTreeCell() )
 		{
-			HCubeComp::enumerate( CompEnumFunc<_M>(*this, neighbor) );
+			HCubeComp::enumerate( CompEnumFunc<HCubeComp>(*this, neighbor) );
 		}
 	}
 

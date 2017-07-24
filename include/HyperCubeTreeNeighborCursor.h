@@ -21,6 +21,10 @@ namespace hct
 		// Type of the value to be stored at each neighborhood hypercube's component
 		struct HCubeComponentValue
 		{
+			inline hct::HyperCubeTreeCell cell() const { return m_cell; }
+			inline Vec<size_t, D> resolution() const { return m_resolution; }
+			inline Vec<size_t, D> position() const { return m_position; }
+
 			hct::HyperCubeTreeCell m_cell; // neighbor cell
 			Vec<size_t, D> m_resolution; // resolution in which position is expressed
 			Vec<size_t, D> m_position; // poisition of the cell

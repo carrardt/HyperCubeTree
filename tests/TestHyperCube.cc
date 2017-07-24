@@ -19,9 +19,9 @@ struct PrintCBitField
 struct PrintHCubeCompMask
 {
 	inline PrintHCubeCompMask(ostream& o) : out(o) {}
-	template<typename _T, typename _M> inline void operator () ( hct::HyperCube<_T, 0, _M> )
+	template<typename T, typename Mask> inline void operator () (const T& value, Mask)
 	{
-		hct::HyperCube<_T, 0, _M>::Mask::toStream(out);
+		Mask::toStream(out);
 		out << ' ';
 	}
 	ostream& out;
@@ -33,10 +33,10 @@ struct PrintComponent
 	ostream& out;
 	inline PrintComponent(const PrintComponent& pc) : out(pc.out) {}
 	inline PrintComponent(ostream& o) : out(o) {}
-	template<typename T, typename Mask> inline void operator() (const HyperCube<T, 0, Mask>& component)
+	template<typename T, typename Mask> inline void operator() (const T& value, Mask)
 	{
 		Mask::toStream(out);
-		out << " : value " << component.value;
+		out << " : value " << value;
 		out << " : " << (1 << Mask::N_FREE) << " point(s) : ";
 		PrintCBitField printer(out);
 		Mask::enumerate(printer);

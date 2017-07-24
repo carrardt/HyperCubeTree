@@ -8,6 +8,65 @@
 
 namespace hct
 {
+	/* helper template to determine what is the vertex index (aka bitfield) of cell in the dual mesh,
+	relative to a vertex in the primary mesh
+	*/
+	/*
+	template<typename CompBF, typename VertBF> struct NeighborDualVertex {};
+	template<> struct NeighborDualVertex<NullBitField, NullBitField>
+	{
+		using Vertex = NullBitField;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborDualVertex< CBitfield<Bit0, CompBFTail>, CBitfield<Bit0, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit0, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborDualVertex< CBitfield<Bit1, CompBFTail>, CBitfield<Bit1, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit1, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborDualVertex< CBitfield<BitX, CompBFTail>, CBitfield<Bit0, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit1, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborDualVertex< CBitfield<BitX, CompBFTail>, CBitfield<Bit1, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit0, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+	*/
+
+	// symétrie, sauf là ou il y a des X;
+	template<typename CompBF, typename VertBF> struct NeighborVertex {};
+	template<> struct NeighborVertex<NullBitField, NullBitField>
+	{
+		using Vertex = NullBitField;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborVertex< CBitfield<BitX, CompBFTail>, CBitfield<Bit0, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit0, typename NeighborVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborVertex< CBitfield<BitX, CompBFTail>, CBitfield<Bit1, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit1, typename NeighborVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborVertex< CBitfield<Bit0, CompBFTail>, CBitfield<Bit0, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit1, typename NeighborVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+	template<typename CompBFTail, typename VertBFTail>
+	struct NeighborVertex< CBitfield<Bit1, CompBFTail>, CBitfield<Bit1, VertBFTail> >
+	{
+		using Vertex = CBitfield<Bit0, typename NeighborVertex<CompBFTail, VertBFTail>::Vertex >;
+	};
+
+
 	template<typename _Tree>
 	struct CellVertexConnectivity
 	{
@@ -22,6 +81,51 @@ namespace hct
 		using CellVertexIds = std::array<size_t, CellNumberOfVertices>;
 		using VertexIdArray = TreeLevelArray<CellVertexIds>;
 
+		template<typename VertBF>
+		struct Pass1VertexNeighborCellFunctor
+		{
+			inline Pass1VertexNeighborCellFunctor(VertexIdArray& vertexIdArray, size_t vertexId)
+				: m_vertexIdArray(vertexIdArray)
+				, m_vertexId(vertexId)
+			{}
+
+			template<typename T, typename CompBF>
+			inline void operator() (const T& neighbor, CompBF)
+			{
+				using NeighborVertBF = NeighborVertex<CompBF, VertBF>;
+				assert(m_vertexIdArray[neighbor.cell()] == NotAVertexId || m_vertexIdArray[neighbor.cell()]== m_vertexId);
+				m_vertexIdArray[neighbor.cell()][NeighborVertBF::BITFIELD] = m_vertexId;
+			}
+
+			VertexIdArray& m_vertexIdArray;
+			size_t m_vertexId;
+		};
+
+		struct Pass1VertexFunctor
+		{
+			inline Pass1VertexFunctor(const HCTVertexOwnershipCursor& cursor, VertexIdArray& vertexIdArray, size_t& nVertices)
+				: m_cursor(cursor)
+				, m_vertexIdArray(vertexIdArray)
+				, m_nVertices(nVertices)
+			{}
+
+			template<typename T, typename VertBF> 
+			inline void operator() (const T& value, VertBF)
+			{
+				constexpr size_t i = VertBF::BITFIELD;
+				if (m_cursor.ownsVertex(i))
+				{
+					assert(m_vertexIdArray[m_cursor.cell()] == NotAVertexId);
+					m_vertexIdArray[m_cursor.cell()][i] = m_nVertices;
+					m_cursor.m_nbh.forEachComponentSharingVertex(VertBF, Pass1VertexNeighborCellFunctor<VertBF>(m_vertexIdArray, m_nVertices) );
+					++m_nVertices;
+				}
+			}
+			const HCTVertexOwnershipCursor& m_cursor;
+			VertexIdArray& m_vertexIdArray;
+			size_t& m_nVertices;
+		};
+
 		static inline void compute(Tree& tree, VertexIdArray& vertexIdArray)
 		{
 			tree.fitArray(&vertexIdArray);
@@ -31,25 +135,24 @@ namespace hct
 			size_t nbVertices = 0;
 			tree.preorderParseLeaves([&vertexIdArray,&nbVertices](const HCTVertexOwnershipCursor& cursor)
 			{
-				for (size_t i = 0; i < CellNumberOfVertices; i++)
-				{
-					if (cursor.ownsVertex(i))
-					{
-						vertexIdArray[cursor.cell()] = nbVertices;
-						++nbVertices;
-						// copy to neighbor cells
-					}
-				}
+				cursor.m_nbh.forEachVertexComponent(Pass1VertexFunctor(cursor,vertexIdArray,nbVertices ) );
 			}
 			, HCTVertexOwnershipCursor(tree));
 
 			// 2nd pass : propagate up to the root
 			tree.postorderParseCells([&tree,&vertexIdArray](const DefaultTreeCursor& cursor)
 			{
-
+				Cell cell = cursor.cell();
+				if (!tree.isLeaf(cell))
+				{
+					GridDimension<D> grid = tree.getLevelSubdivisionGrid(cell.level())
+					for (size_t v = 0; v < CellNumberOfVertices; v++)
+					{
+						Vec<size_t, D> cornerChildLocation = grid * hct::bitfield_vec<D>(v);
+						vertexIdArray[cell][v]
+					}
+				}
 			});
-
-
 		}
 	};
 }
