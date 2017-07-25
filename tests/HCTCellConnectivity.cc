@@ -13,6 +13,20 @@ std::ostream& operator << (std::ostream& out, hct::HyperCubeTreeCell c) { return
 
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 using Tree = hct::HyperCubeTree<3, SubdivisionScheme>;
+using HCTVertexOwnershipCursor = hct::HyperCubeTreeVertexOwnershipCursor<Tree>;
+using CellVertexConnectivity = hct::CellVertexConnectivity<Tree>;
+using CellVertexIds = CellVertexConnectivity::CellVertexIds;
+using VertexIdArray = CellVertexConnectivity::VertexIdArray;
+
+std::ostream& operator << (std::ostream& out, const CellVertexIds& cv)
+{
+	for (size_t i = 0; i < CellVertexConnectivity::CellNumberOfVertices; i++)
+	{
+		if (i > 0) out << ' ';
+		out << cv[i];
+	}
+	return out;
+}
 
 // ==========================================================================
 // =============================== test method ==============================
@@ -21,7 +35,9 @@ using Tree = hct::HyperCubeTree<3, SubdivisionScheme>;
 static void testTreeCellConnectivity(Tree& tree)
 {
 	tree.toStream(std::cout);
-
+	VertexIdArray vertexIds;
+	size_t nVertices = 0;
+	nVertices = CellVertexConnectivity::compute(tree, vertexIds);
 }
 
 
