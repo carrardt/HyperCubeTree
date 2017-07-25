@@ -16,12 +16,15 @@ struct PrintCBitField
 	ostream& out;
 };
 
+template<typename VertBF>
 struct PrintHCubeCompMask
 {
 	inline PrintHCubeCompMask(ostream& o) : out(o) {}
 	template<typename T, typename Mask> inline void operator () (const T& value, Mask)
 	{
 		Mask::toStream(out);
+		out << '/';
+		hct::NeighborVertex<Mask,VertBF>::Vertex::toStream(out);
 		out << ' ';
 	}
 	ostream& out;
@@ -124,7 +127,7 @@ int main()
 #		define TEST_OPERATOR(c,b,a) \
 		using _##a##b##c = CBitField< Bit##a, CBitField< Bit##b, CBitField< Bit##c, NullBitField > > >; \
 		cout << "components for vertex "; _##a##b##c::toStream(cout); cout<<" : "; \
-		hc3.forEachComponentSharingVertex( _##a##b##c(), PrintHCubeCompMask(std::cout) ); cout<<endl
+		hc3.forEachComponentSharingVertex( _##a##b##c(), PrintHCubeCompMask<_##a##b##c>(std::cout) ); cout<<endl
 		TEST_OPERATOR(0, 0, 0);
 		TEST_OPERATOR(0, 0, 1);
 		TEST_OPERATOR(0, 1, 0);

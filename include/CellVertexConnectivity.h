@@ -74,9 +74,9 @@ namespace hct
 			CellVertexIds defValue;
 			defValue.fill( NotAVertexId );
 			vertexIdArray.fill(defValue);
+			size_t nbVertices = 0;
 
 			// first pass : generate ids of cell owned vertices
-			size_t nbVertices = 0;
 			tree.preorderParseLeaves([&vertexIdArray,&nbVertices](const HCTVertexOwnershipCursor& cursor)
 			{
 				cursor.m_nbh.forEachVertexComponent(Pass1VertexFunctor(cursor,vertexIdArray,nbVertices ) );

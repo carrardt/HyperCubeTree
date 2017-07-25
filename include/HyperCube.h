@@ -116,20 +116,14 @@ namespace hct
 	  static constexpr unsigned int D = _D;
 	  static constexpr size_t NumberOfVertices = static_cast<size_t>(1) << D;
 
-	  HyperCube< T, D - 1, CBitField<Bit0, Mask> > _0; // Ensemble des elements dont le premier bit est contraint à 0
-	  HyperCube< T, D - 1, CBitField<BitX, Mask> > _X; // Ensemble des elements dont le premier bit est libre
-	  HyperCube< T, D - 1, CBitField<Bit1, Mask> > _1; // Ensemble des elements dont le premier bit est contraint à 1
+	  // WARNING : this is tricky !
+	  HyperCube< T, D - 1, CBitField<Bit0, Mask> > _0;
+	  HyperCube< T, D - 1, CBitField<BitX, Mask> > _X;
+	  HyperCube< T, D - 1, CBitField<Bit1, Mask> > _1;
 
 	  inline HyperCube() : _0(), _X(), _1() {}
 	  inline HyperCube(const T& defVal) : _0(defVal), _X(defVal), _1(defVal) {}
 	  inline HyperCube(const HyperCube& cube) : _0(cube._0), _X(cube._X), _1(cube._1) {}
-
-	  inline HyperCube& operator = (const HyperCube& cube)
-	  {
-		  _0 = cube._0;
-		  _X = cube._X;
-		  _1 = cube._1;
-	  }
 
 	  inline T& self() { return _X.self(); }
 	  inline const T& self() const { return _X.self(); }
@@ -152,6 +146,7 @@ namespace hct
 	  }
 
 	  // =============== iterate over components sharing a specific vertex ===============
+	  // FIXME: LE IF N'EMPECHE L'INSTANTIATION !!!!!
 	  template<typename VertBF, typename FuncT>
 	  inline void forEachComponentSharingVertex(VertBF, FuncT f)
 	  {
@@ -166,7 +161,6 @@ namespace hct
 		  _X.forEachComponentSharingVertex(typename VertBF::Tail(), f);
 		  if (VertBF::Bit::ONE) { _1.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
 	  }
-
 
 	  // =============== iterate over all the values stored for each component ============
 	  template<typename FuncT>
@@ -240,7 +234,10 @@ namespace hct
    * 
    * CompBF = X0, VertBF = 10 => NeighborVertex::Vertex = 11
    */
-  template<typename CompBF, typename VertBF> struct NeighborVertex {};
+  template<typename CompBF, typename VertBF> struct NeighborVertex
+  {
+  };
+
   template<> struct NeighborVertex<NullBitField, NullBitField>
   {
 	  using Vertex = NullBitField;
