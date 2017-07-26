@@ -6,6 +6,7 @@
 
 #include <iostream> 
 #include <set>
+#include <chrono>
 
 using hct::Vec3d;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
@@ -25,6 +26,8 @@ static size_t testTreeVertexOwnership(Tree& tree)
 
 	size_t nbOwnedVertices = 0;
 	std::set<hct::Vec3d> posSet;
+
+	auto T1 = std::chrono::high_resolution_clock::now();
 
 	tree.preorderParseCells([&tree,&nbOwnedVertices,&posSet](const HCTVertexOwnershipCursor& cursor)
 	{
@@ -46,8 +49,12 @@ static size_t testTreeVertexOwnership(Tree& tree)
 	}
 	, HCTVertexOwnershipCursor(tree) );
 
+	auto T2 = std::chrono::high_resolution_clock::now();
+	auto usec = std::chrono::duration_cast<std::chrono::microseconds>(T2 - T1);
+
 	std::cout << "different vertices = " << posSet.size() << std::endl;
 	std::cout << "owned vertices = " << nbOwnedVertices << std::endl;
+	std::cout << "time = " << usec.count() << "uS" << std::endl;
 
 	// all vertices must be owned, they must be owned by exactly one cell
 	assert(nbOwnedVertices == posSet.size());

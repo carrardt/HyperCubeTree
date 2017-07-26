@@ -126,7 +126,7 @@ int main()
 		hc3.forEachVertexValue([](int64_t i, bool& c) { c = true; });
 #		define TEST_OPERATOR(c,b,a) \
 		using _##a##b##c = CBitField< Bit##a, CBitField< Bit##b, CBitField< Bit##c, NullBitField > > >; \
-		cout << "components for vertex "; _##a##b##c::toStream(cout); cout<<" : "; \
+		cout << "neighbor components for vertex "; _##a##b##c::toStream(cout); cout<<" : "; \
 		hc3.forEachComponentSharingVertex( _##a##b##c(), PrintHCubeCompMask<_##a##b##c>(std::cout) ); cout<<endl
 		TEST_OPERATOR(0, 0, 0);
 		TEST_OPERATOR(0, 0, 1);

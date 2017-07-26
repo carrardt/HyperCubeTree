@@ -169,7 +169,7 @@ namespace hct
 				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.cell().level());
 				ForEachGridLocation(grid, [this, grid, &f, &cursor](GridLocation loc)
 				{
-					preorderParseCells(f, CellCursorT(*this, cursor, grid, loc));
+					postorderParseCells(f, CellCursorT(*this, cursor, grid, loc));
 				});
 			}
 			f(cursor);

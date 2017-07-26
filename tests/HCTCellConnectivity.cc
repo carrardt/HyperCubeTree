@@ -6,6 +6,7 @@
 
 #include <iostream> 
 #include <set>
+#include <chrono>
 
 using hct::Vec3d;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
@@ -34,10 +35,32 @@ std::ostream& operator << (std::ostream& out, const CellVertexIds& cv)
 
 static void testTreeCellConnectivity(Tree& tree)
 {
-	tree.toStream(std::cout);
+	static constexpr size_t CellNumberOfVertices = CellVertexConnectivity::CellNumberOfVertices;
+	static constexpr unsigned int D = Tree::D;
 	VertexIdArray vertexIds;
-	size_t nVertices = 0;
-	nVertices = CellVertexConnectivity::compute(tree, vertexIds);
+
+	auto T1 = std::chrono::high_resolution_clock::now();
+
+	// build connectivity
+	size_t nVertices = CellVertexConnectivity::compute(tree, vertexIds);
+
+	// verify that all values are set
+	size_t totalVertices = 0;
+	tree.postorderParseCells([nVertices,&totalVertices,&vertexIds](const typename Tree::DefaultTreeCursor& cursor)
+	{
+		hct::HyperCubeTreeCell cell = cursor.cell();
+		for (size_t i = 0; i < CellNumberOfVertices; i++)
+		{
+			++totalVertices;
+			assert(vertexIds[cell][i] >= 0 && vertexIds[cell][i] < nVertices);
+		}
+	});
+
+	auto T2 = std::chrono::high_resolution_clock::now();
+	auto usec = std::chrono::duration_cast<std::chrono::microseconds>(T2 - T1);
+
+	tree.toStream(std::cout);
+	std::cout << "totalVertices=" << totalVertices << ", nVertices=" << nVertices << ", time="<< usec.count() <<"uS" << std::endl;
 }
 
 

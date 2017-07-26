@@ -146,20 +146,34 @@ namespace hct
 	  }
 
 	  // =============== iterate over components sharing a specific vertex ===============
-	  // FIXME: LE IF N'EMPECHE L'INSTANTIATION !!!!!
 	  template<typename VertBF, typename FuncT>
-	  inline void forEachComponentSharingVertex(VertBF, FuncT f)
+	  inline void forEachComponentSharingVertex(VertBF, FuncT f);
+	  template<typename VertBFTail, typename FuncT>
+	  inline void forEachComponentSharingVertex( CBitField<Bit0, VertBFTail> , FuncT f)
 	  {
-		  if (VertBF::Bit::ZERO) { _0.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
-		  _X.forEachComponentSharingVertex(typename VertBF::Tail(), f);
-		  if (VertBF::Bit::ONE) { _1.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
+		  _0.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
 	  }
-	  template<typename VertBF, typename FuncT>
-	  inline void forEachComponentSharingVertex(VertBF, FuncT f) const
+	  template<typename VertBFTail, typename FuncT>
+	  inline void forEachComponentSharingVertex(CBitField<Bit1, VertBFTail> , FuncT f)
 	  {
-		  if (VertBF::Bit::ZERO) { _0.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
-		  _X.forEachComponentSharingVertex(typename VertBF::Tail(), f);
-		  if (VertBF::Bit::ONE) { _1.forEachComponentSharingVertex(typename VertBF::Tail(), f); }
+		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _1.forEachComponentSharingVertex(typename VertBFTail(), f);
+	  }
+
+	  template<typename VertBF, typename FuncT>
+	  inline void forEachComponentSharingVertex(VertBF, FuncT f) const;
+	  template<typename VertBFTail, typename FuncT>
+	  inline void forEachComponentSharingVertex(CBitField<Bit0, VertBFTail>, FuncT f) const
+	  {
+		  _0.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
+	  }
+	  template<typename VertBFTail, typename FuncT>
+	  inline void forEachComponentSharingVertex(CBitField<Bit1, VertBFTail>, FuncT f) const
+	  {
+		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _1.forEachComponentSharingVertex(typename VertBFTail(), f);
 	  }
 
 	  // =============== iterate over all the values stored for each component ============
