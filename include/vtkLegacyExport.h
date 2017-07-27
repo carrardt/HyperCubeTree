@@ -3,6 +3,7 @@
 #include "Vec.h"
 #include "HyperCubeTree.h"
 #include "HyperCubeTreeVertexOwnershipCursor.h"
+#include "CellVertexConnectivity.h"
 
 #include <vector>
 #include <map>

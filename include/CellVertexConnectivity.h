@@ -82,7 +82,6 @@ namespace hct
 			size_t& m_nVertices;
 		};
 
-
 		struct Pass1bVertexFunctor
 		{
 			inline Pass1bVertexFunctor(const HCTVertexOwnershipCursor& cursor, VertexIdArray& vertexIdArray)

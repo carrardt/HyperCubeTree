@@ -16,10 +16,21 @@ struct PrintCBitField
 	ostream& out;
 };
 
-template<typename VertBF>
-struct PrintHCubeCompMask
+struct PrintHCubeComp
 {
-	inline PrintHCubeCompMask(ostream& o) : out(o) {}
+	inline PrintHCubeComp(ostream& o) : out(o) {}
+	template<typename T, typename Mask> inline void operator () (const T& value, Mask)
+	{
+		Mask::toStream(out);
+		out << '/' << value << ' ';
+	}
+	ostream& out;
+};
+
+template<typename VertBF>
+struct PrintHCubeVertCompMask
+{
+	inline PrintHCubeVertCompMask(ostream& o) : out(o) {}
 	template<typename T, typename Mask> inline void operator () (const T& value, Mask)
 	{
 		Mask::toStream(out);
@@ -75,14 +86,14 @@ int main()
 	{
 		HyperCube<int64_t, 3> hc3(-1);
 		hc3.forEachVertexValue([](size_t i, int64_t& c) { c=i; });
-		cout << "test forEachValue on a 3-cube:\n";
+		cout << "\ntest forEachValue on a 3-cube:\n";
 		hc3.forEachValue([](int64_t c) { cout<<"value "<<c<<'\n'; });
-		cout << "test forEachVertex on a 3-cube:\n";
+		cout << "\ntest forEachVertex on a 3-cube:\n";
 		hc3.forEachVertexValue([](size_t i, int64_t c) { cout << "vertex " << i << " = " << c << '\n'; });
 	}
 
 	{
-		cout << "test bitfield [] operator :\n";
+		cout << "\ntest bitfield [] operator :\n";
 		HyperCube<int64_t, 3> hc3(-1);
 		int i = 0;
 		hc3.forEachValue([&i](int64_t& c) { c = i++; });
@@ -121,13 +132,21 @@ int main()
 	}
 
 	{
-		cout << "test forEachVertexComponent:\n";
+		cout << "\ntest forEachVertexComponent:\n";
+		HyperCube<char, 3> hc3('o');
+		hc3.forEachVertexValue([](int64_t i, char& c) { c = '@'; });
+		hc3.forEachVertexComponent(PrintHCubeComp(cout));
+		cout << '\n';
+	}
+
+	{
+		cout << "\ntest forEachComponentSharingVertex:\n";
 		HyperCube<bool, 3> hc3(false);
 		hc3.forEachVertexValue([](int64_t i, bool& c) { c = true; });
 #		define TEST_OPERATOR(c,b,a) \
 		using _##a##b##c = CBitField< Bit##a, CBitField< Bit##b, CBitField< Bit##c, NullBitField > > >; \
 		cout << "neighbor components for vertex "; _##a##b##c::toStream(cout); cout<<" : "; \
-		hc3.forEachComponentSharingVertex( _##a##b##c(), PrintHCubeCompMask<_##a##b##c>(std::cout) ); cout<<endl
+		hc3.forEachComponentSharingVertex( _##a##b##c(), PrintHCubeVertCompMask<_##a##b##c>(std::cout) ); cout<<endl
 		TEST_OPERATOR(0, 0, 0);
 		TEST_OPERATOR(0, 0, 1);
 		TEST_OPERATOR(0, 1, 0);

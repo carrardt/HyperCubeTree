@@ -167,5 +167,57 @@ int main()
 		testTreeCellConnectivity(tree);
 	}
 
+	{
+		std::cout << "\ntest 6 :\n";
+		SubdivisionScheme subdivisions;
+		subdivisions.addLevelSubdivision({ 3,4,5 });
+		subdivisions.addLevelSubdivision({ 4,3,2 });
+		subdivisions.addLevelSubdivision({ 3,2,1 });
+		subdivisions.addLevelSubdivision({ 4,4,4 });
+		subdivisions.addLevelSubdivision({ 5,5,5 });
+		subdivisions.addLevelSubdivision({ 2,2,2 });
+		Tree tree(subdivisions);
+		tree.refine(tree.rootCell());
+		size_t nbRootChildren = subdivisions.getLevelSubdivision(0).gridSize();
+		for (size_t i = 0; i < nbRootChildren; i++)
+		{
+			tree.refine(tree.child(tree.rootCell(), i));
+		}
+
+		auto sphereA = hct::csg_sphere(Vec3d({ 0.0,0.0,0.0 }), 1.0);
+		auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
+		auto sphereC = hct::csg_sphere(Vec3d({ 0.75,0.75,0.5 }), 0.25);
+		auto shape = hct::csg_union( hct::csg_difference(sphereA, sphereB) , sphereC);
+
+		// refine tree given an implicit surface
+		tree.preorderParseCells([shape, &tree](const HCTVertexOwnershipCursor& cursor)
+		{
+			hct::HyperCubeTreeCell cell = cursor.cell();
+			if (tree.isRefinable(cell))
+			{
+				// refine along the implicit surface shape(x)=0
+				constexpr size_t CellNumberOfVertices = 1 << Tree::D;
+				bool allInside = true;
+				bool allOutside = true;
+				for (size_t i = 0; i < CellNumberOfVertices; i++)
+				{
+					auto vertex = hct::bitfield_vec<Tree::D>(i);
+					Vec3d p = cursor.position() + vertex;
+					p /= cursor.resolution();
+					if (shape(p) > 0.0) { allInside = false; }
+					else { allOutside = false; }
+				}
+				if (!allInside && !allOutside)
+				{
+					tree.refine(cell);
+				}
+			}
+		}
+		, HCTVertexOwnershipCursor(tree));
+
+		testTreeCellConnectivity(tree);
+	}
+
+
 	return 0;
 }
