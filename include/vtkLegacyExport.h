@@ -21,6 +21,9 @@ namespace hct
 			using PositionI = hct::Vec<size_t, D>;
 			using PositionF = hct::Vec<double, D>;
 			using HCTVertexOwnershipCursor = hct::HyperCubeTreeVertexOwnershipCursor<Tree>;
+			using CellVertexConnectivity = hct::CellVertexConnectivity<Tree>;
+			using CellVertexIds = CellVertexConnectivity::CellVertexIds;
+			using VertexIdArray = CellVertexConnectivity::VertexIdArray;
 
 			assert(D >= 1 && D <= 3);
 
@@ -40,74 +43,42 @@ namespace hct
 				resolutionMultiplier[i] *= resolutionMultiplier[i+1];
 			}
 
-			/*for (int i = 0; i < (nSubdivs+1); i++)
-			{
-				std::cout << "res mult " << i << " = " << resolutionMultiplier[i] << '\n';
-			}
-			std::cout.flush();*/
+			// build connectivity
+			VertexIdArray vertexIds;
+			size_t nVertices = CellVertexConnectivity::compute(tree, vertexIds);
+			std::vector< HyperCubeTreeCell > leaves;
 
-			std::map<PositionI, int64_t> vertices;
-			tree.preorderParseLeaves( [&vertices,&resolutionMultiplier](const HCTVertexOwnershipCursor& cursor)
+			out << "POINTS " << nVertices << " double\n";
+			tree.preorderParseLeaves( [&leaves, &resolutionMultiplier](const HCTVertexOwnershipCursor& cursor)
 			{
 				using HCubeComponentValue = typename HCTVertexOwnershipCursor::HCubeComponentValue;
 				constexpr size_t CellNumberOfVertices = 1 << Tree::D;
 				for (size_t i = 0; i < CellNumberOfVertices; i++)
 				{
-					auto vertex = hct::bitfield_vec<Tree::D>(i);
-					PositionI p = cursor.position() + vertex;
-					p *= resolutionMultiplier[ cursor.cell().level() ];
 					if (cursor.ownsVertex(i))
 					{
-						vertices[p] = -1;
+						auto vertex = hct::bitfield_vec<Tree::D>(i);
+						PositionI p = cursor.position() + vertex;
+						p *= resolutionMultiplier[cursor.cell().level()];
+						PositionF pcoord = p;
+						pcoord /= resolutionMultiplier[0];
+						pcoord.toStream(out, " ");
+						out << '\n';
 					}
 				}
+				leaves.push_back( cursor.cell() );
 			}
 			, HCTVertexOwnershipCursor(tree) );
 
-			out << "POINTS " << vertices.size() << " double\n";
-			size_t vertexCount = 0;
-			for (auto& it : vertices)
-			{
-				PositionF p = it.first;
-				p /= resolutionMultiplier[0];
-				p.toStream(out, " ");
-				it.second = vertexCount;
-				++vertexCount;
-				out << '\n';
-			}
-			assert(vertexCount == vertices.size());
-			for (auto it : vertices)
-			{
-				assert(it.second!=-1);
-			}
-
-			// build cell->vertices connectivity
-			std::vector<size_t> cellVertices;
-			tree.preorderParseLeaves([&cellVertices, &vertices, &resolutionMultiplier](const HCTVertexOwnershipCursor& cursor)
-			{
-				using HCubeComponentValue = typename HCTVertexOwnershipCursor::HCubeComponentValue;
-				constexpr size_t CellNumberOfVertices = 1 << Tree::D;
-				for (size_t i = 0; i < CellNumberOfVertices; i++)
-				{
-					auto vertex = hct::bitfield_vec<Tree::D>(i);
-					PositionI p = cursor.position() + vertex;
-					p *= resolutionMultiplier[cursor.cell().level()];
-					int64_t vertexIndex = vertices[p];
-					assert(vertexIndex != -1);
-					cellVertices.push_back(vertexIndex);
-				}
-			}
-			, HCTVertexOwnershipCursor(tree));
-
 			// write cell connectivity
-			size_t numberOfCells = cellVertices.size() / CellNumberOfVertices;
+			size_t numberOfCells = leaves.size();
 			out << "CELLS " << numberOfCells << ' ' << numberOfCells*(CellNumberOfVertices+1) << '\n';
-			for (size_t i = 0; i < numberOfCells; i++)
+			for (auto cell : leaves)
 			{
 				out << CellNumberOfVertices;
-				for (size_t j = 0; j < CellNumberOfVertices; j++)
+				for (size_t i = 0; i < CellNumberOfVertices; i++)
 				{
-					out << ' ' << cellVertices[i*CellNumberOfVertices + j];
+					out << ' ' << vertexIds[cell][i];
 				}
 				out << '\n';
 			}

@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <cstdint>
+#include <assert.h>
+
 using namespace std;
 using namespace hct;
 
@@ -22,6 +24,9 @@ struct PrintHCubeComp
 	template<typename T, typename Mask> inline void operator () (const T& value, Mask)
 	{
 		Mask::toStream(out);
+		Vec<size_t, Mask::N_BITS> v = bitfield_vec<Mask::N_BITS>(Mask::BITFIELD);
+		out << '-' << Mask::BITFIELD << '-';
+		v.toStream(out,"");
 		out << '/' << value << ' ';
 	}
 	ostream& out;
@@ -132,9 +137,16 @@ int main()
 	}
 
 	{
+		// prints suite of a-b-c values.
+		// must verify that a==c, b is an increasing integer starting at 0
 		cout << "\ntest forEachVertexComponent:\n";
-		HyperCube<char, 3> hc3('o');
-		hc3.forEachVertexValue([](int64_t i, char& c) { c = '@'; });
+		HyperCube<int, 3> hc3(-1);
+		int c = 0;
+		hc3.forEachVertexValue([&c](int64_t vi, int& value)
+			{
+			assert(vi == c);
+			value = c++;
+			});
 		hc3.forEachVertexComponent(PrintHCubeComp(cout));
 		cout << '\n';
 	}
