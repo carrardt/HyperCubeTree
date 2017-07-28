@@ -103,7 +103,7 @@ namespace hct
 			VertexIdArray& m_vertexIdArray;
 		};
 
-		static inline size_t compute(Tree& tree, VertexIdArray& vertexIdArray)
+		static inline size_t compute(const Tree& tree, VertexIdArray& vertexIdArray)
 		{
 			tree.fitArray(&vertexIdArray);
 			CellVertexIds defValue;

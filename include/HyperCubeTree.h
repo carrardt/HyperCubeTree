@@ -178,7 +178,7 @@ namespace hct
 
 		// pre-order, leaves only
 		template<typename CellFuncT, typename CellCursorT = DefaultTreeCursor>
-		inline void preorderParseLeaves(CellFuncT f, const CellCursorT& cursor = CellCursorT()) const
+		inline void parseLeaves(CellFuncT f, const CellCursorT& cursor = CellCursorT()) const
 		{
 			if (isLeaf(cursor.cell()))
 			{
@@ -189,7 +189,7 @@ namespace hct
 				SubdivisionGrid grid = m_subdivision_scheme.getLevelSubdivision(cursor.cell().level());
 				ForEachGridLocation(grid, [this, grid, &f, &cursor](GridLocation loc)
 				{
-					preorderParseLeaves(f, CellCursorT(*this, cursor, grid, loc));
+					parseLeaves(f, CellCursorT(*this, cursor, grid, loc));
 				});
 			}
 		}

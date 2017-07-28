@@ -9,6 +9,8 @@
 #include <map>
 #include <iostream>
 
+#include "std_array_ostream.h"
+
 namespace hct
 {
 	namespace vtk
@@ -32,15 +34,15 @@ namespace hct
 			out << "ASCII\n";
 			out << "DATASET UNSTRUCTURED_GRID\n";
 
-			int nSubdivs = tree.getNumberOfLevelSubdivisions();
+			size_t nSubdivs = tree.getNumberOfLevelSubdivisions();
 			std::vector< PositionI > resolutionMultiplier( nSubdivs+1 , PositionI(1) );
-			for (int i = 0; i < nSubdivs ; i++)
+			for (size_t i = 0; i < nSubdivs ; i++)
 			{
 				resolutionMultiplier[i] = tree.getLevelSubdivisionGrid(i);
 			}
-			for (int i = nSubdivs-1; i >= 0; i--)
+			for (size_t i = nSubdivs; i > 0; i--)
 			{
-				resolutionMultiplier[i] *= resolutionMultiplier[i+1];
+				resolutionMultiplier[i-1] *= resolutionMultiplier[i];
 			}
 
 			// build connectivity
@@ -49,7 +51,7 @@ namespace hct
 			std::vector< HyperCubeTreeCell > leaves;
 
 			out << "POINTS " << nVertices << " double\n";
-			tree.preorderParseLeaves( [&leaves, &resolutionMultiplier](const HCTVertexOwnershipCursor& cursor)
+			tree.parseLeaves( [&out, &leaves, &resolutionMultiplier](const HCTVertexOwnershipCursor& cursor)
 			{
 				using HCubeComponentValue = typename HCTVertexOwnershipCursor::HCubeComponentValue;
 				constexpr size_t CellNumberOfVertices = 1 << Tree::D;
