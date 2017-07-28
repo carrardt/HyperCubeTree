@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 	tree.addArray(&cellSurfaceDistance);
 	cellSurfaceDistance.fill(1000.0);
 
-	tree.preorderParseLeaves([shape,&cellSurfaceDistance](const LocatedTreeCursor& cursor)
+	tree.parseLeaves([shape,&cellSurfaceDistance](const LocatedTreeCursor& cursor)
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
 		Vec3d p = cursor.m_origin + ( cursor.m_size * 0.5 );
