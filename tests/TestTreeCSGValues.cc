@@ -56,7 +56,7 @@ int main()
 				{
 					auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
 					Vec3d p = cursor.m_origin + vertex * cursor.m_size;
-					if (shape(p) > 0.0) { allInside = false; }
+					if (shape(p).val > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}
 				if (!allInside && !allOutside)
@@ -84,7 +84,7 @@ int main()
 		{
 			hct::HyperCubeTreeCell cell = cursor.cell();
 			Vec3d p = cursor.m_origin + ( cursor.m_size * 0.5 );
-			double surfDist = shape(p);
+			double surfDist = shape(p).val;
 			cellSurfaceDistance[cell] = surfDist;
 			cellLevel[cell] = cell.level();
 			cellIndex[cell] = cell.index();

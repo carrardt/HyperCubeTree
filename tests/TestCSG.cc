@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 using hct::Vec3d;
+using hct::Vec4d;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
 
 template<typename FuncT>
@@ -14,13 +15,16 @@ static inline void testSurfaceFunction(FuncT f, size_t N)
 	size_t insideCount = 0;
 	double outsideDistSum = 0.0;
 	double insideDistSum = 0.0;
+	Vec3d normalSum(0.0);
 	for (size_t i = 0; i < N; i++)
 	{
 		double x = static_cast<double>(std::rand()) / RAND_MAX;
 		double y = static_cast<double>(std::rand()) / RAND_MAX;
 		double z = static_cast<double>(std::rand()) / RAND_MAX;
 		Vec3d p = { x,y,z };
-		double dist = f(p);
+		Vec4d plane = f(p);
+		double dist = plane.val;
+		normalSum += plane;
 		if (dist > 0.0) { outsideDistSum += dist; }
 		else { insideDistSum += dist;}
 		bool inside = interior(p);
@@ -30,6 +34,7 @@ static inline void testSurfaceFunction(FuncT f, size_t N)
 	std::cout << "inside ratio = " << volume << std::endl;
 	std::cout << "average positive surface distance = " << outsideDistSum / N << std::endl;
 	std::cout << "average negative surface distance = " << insideDistSum / N << std::endl;
+	std::cout << "average normal = " << normalSum/N << std::endl;
 }
 
 int main(int argc, char* argv[])

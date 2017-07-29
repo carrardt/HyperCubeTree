@@ -59,7 +59,7 @@ static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 			{
 				auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
 				Vec3d p = cursor.m_origin + vertex * cursor.m_size;
-				if ( shape(p) > 0.0) { allInside = false; }
+				if ( shape(p).val > 0.0) { allInside = false; }
 				else { allOutside = false; }
 			}
 			if (!allInside && !allOutside)

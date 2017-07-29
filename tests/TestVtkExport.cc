@@ -13,12 +13,17 @@
 #include <cstdlib>
 
 using hct::Vec3d;
+using hct::Vec4d;
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 using Tree = hct::HyperCubeTree<3, SubdivisionScheme>;
 using HCTVertexOwnershipCursor = hct::HyperCubeTreeVertexOwnershipCursor<Tree>;
 using LocatedTreeCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
 
-std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
+// this allows vectors to be output with space separators
+std::ostream& operator << (std::ostream& out, Vec3d p)
+{
+	return p.toStream(out," ");
+}
 
 int main(int argc, char* argv[])
 {
@@ -75,7 +80,7 @@ int main(int argc, char* argv[])
 				auto vertex = hct::bitfield_vec<Tree::D>(i);
 				Vec3d p = cursor.position() + vertex;
 				p /= cursor.resolution();
-				if (shape(p) > 0.0) { allInside = false; }
+				if (shape(p).val > 0.0) { allInside = false; }
 				else { allOutside = false; }
 			}
 			if (!allInside && !allOutside)
@@ -92,11 +97,19 @@ int main(int argc, char* argv[])
 	tree.addArray(&cellSurfaceDistance);
 	cellSurfaceDistance.fill(1000.0);
 
-	tree.parseLeaves([shape,&cellSurfaceDistance](const LocatedTreeCursor& cursor)
+	hct::TreeLevelArray< Vec3d > cellSurfaceNormal;
+	cellSurfaceNormal.setName("surf_normal");
+	tree.addArray(&cellSurfaceNormal);
+	cellSurfaceNormal.fill( Vec3d(0.0) );
+
+	tree.parseLeaves([shape,&cellSurfaceDistance,&cellSurfaceNormal](const LocatedTreeCursor& cursor)
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
 		Vec3d p = cursor.m_origin + ( cursor.m_size * 0.5 );
-		cellSurfaceDistance[cell] = shape(p);
+		Vec4d plane = shape(p);
+		Vec3d normal(plane);
+		cellSurfaceDistance[cell] = plane.val;
+		cellSurfaceNormal[cell] = normal;
 	}
 	, LocatedTreeCursor(Vec3d(1.0)) );
 

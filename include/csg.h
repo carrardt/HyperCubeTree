@@ -16,13 +16,23 @@ namespace hct
 		a fvalue >0 indicates a point "beyond" or "outside".
 	*/
 
+	/*
+	CSG surface functions return a plane.
+	this is the tangent plane of the nearest surface plane, expressed as if origin was point p, passed in parameter.
+	in other words, it returns :
+	make_vec( signed_distance_to_the_surface , surface_normal )
+	*/
+
+	static constexpr double SurfEpsilon = 1.e-16;
+
 	// ================= generic surface function interface ==================
 	template<unsigned int _D>
 	struct ICSGSurface
 	{
 		static constexpr unsigned int D = _D;
 		using VecT = hct::Vec<double, _D>;
-		virtual double operator () (VecT p) const = 0;
+		using PlaneT = hct::Vec<double, _D+1>;
+		virtual PlaneT operator () (VecT p) const = 0;
 	};
 
 	template<unsigned int _D>
@@ -30,8 +40,9 @@ namespace hct
 	{
 		static constexpr unsigned int D = _D;
 		using VecT = hct::Vec<double,D>;
+		using PlaneT = hct::Vec<double, _D + 1>;
 		inline CSGSurfaceDelegate(ICSGSurface<D>* surf) : m_surf(surf) {}
-		inline double operator () (VecT p) const
+		inline PlaneT operator () (VecT p) const
 		{
 			return m_surf->operator () (p);
 		}
@@ -44,14 +55,18 @@ namespace hct
 	{
 		static constexpr unsigned int D = _D;
 		using VecT = hct::Vec<double, D>;
+		using PlaneT = hct::Vec<double, D + 1>;
 		inline CSGSphere(Vec<double,D> center, double radius) : m_center(center) , m_radius(radius) {}
 		inline CSGSphere(std::initializer_list<double> center, double radius) : CSGSphere(Vec<double, D>(center), radius) {}
-		inline double operator () (VecT p) const override final
+		// evaluation returns the tangent plane on the surface, nearest to p
+		inline PlaneT operator () (VecT p) const override final
 		{
-			VecT v = p - m_center;
-			return std::sqrt(v.dot(v)) - m_radius;
+			VecT normal = p - m_center;
+			double dist = std::sqrt(normal.dot(normal));
+			if (dist > SurfEpsilon) { normal /= dist; }
+			else { normal = VecT(0.0); }
+			return make_vec( dist - m_radius , normal) ;
 		}
-
 		VecT m_center;
 		double m_radius = 0.0;
 	};
@@ -71,11 +86,12 @@ namespace hct
 		using PlaneT = hct::Vec<double, D+1>;
 		inline CSGPlane(Vec<double, D> normal, double offset) : m_plane(offset,normal) {}
 		inline CSGPlane(std::initializer_list<double> coeficients) : m_plane(coeficients) {}
-		inline double operator () (VecT p) const override final
+		inline PlaneT operator () (VecT p) const override final
 		{
-			return p.dot(m_plane) + m_plane.val;
+			double dist = make_vec(1.0,p).dot(m_plane) ;
+			Vec<double, D> normal(m_plane);
+			return make_vec(dist, normal);
 		}
-
 		PlaneT m_plane;
 	};
 
@@ -85,15 +101,16 @@ namespace hct
 	template<unsigned int D> static inline CSGPlane<D>*
 	csg_plane_new(Vec<double, D> normal, double offset) { return new CSGPlane<D>(normal, offset); }
 
+
 	// ================ Inverse operator ==================
 	template<typename FuncT>
 	struct CSGNegate : public ICSGSurface<FuncT::D>
 	{
 		static constexpr unsigned int D = FuncT::D;
 		using VecT = typename FuncT::VecT;
-		using ScalarT = typename VecT::T;
+		using PlaneT = typename FuncT::PlaneT;
 		inline CSGNegate(FuncT f) : m_f(f) {}
-		inline ScalarT operator () (VecT p) const override final
+		inline PlaneT operator () (VecT p) const override final
 		{
 			return - m_f(p) ;
 		}
@@ -107,17 +124,27 @@ namespace hct
 	template<typename FuncT> static inline CSGNegate<FuncT>*
 	csg_negate_new(FuncT f) { return new CSGNegate<FuncT>(f); }
 
+
 	// ================ Union operator ==================
 	template<typename Func1T, typename Func2T>
 	struct CSGUnion : public ICSGSurface<Func1T::D>
 	{
 		static constexpr unsigned int D = Func1T::D;
 		using VecT = typename Func1T::VecT;
-		using ScalarT = typename VecT::T;
+		using PlaneT = typename Func1T::PlaneT;
 		inline CSGUnion(Func1T f1, Func2T f2) : m_f1(f1) , m_f2(f2) {}
-		inline ScalarT operator () (VecT p)	const override final
-		{ 
-			return std::min(m_f1(p), m_f2(p)); 
+		inline PlaneT operator () (VecT p)	const override final
+		{
+			PlaneT plane1 = m_f1(p);
+			PlaneT plane2 = m_f2(p);
+			double d1 = plane1.val;
+			double d2 = plane2.val;
+			VecT n1(plane1);
+			VecT n2(plane2);
+			VecT normal;
+			if (d1 <= d2) { normal = n1; }
+			else { normal = n2; }
+			return make_vec( std::min(d1,d2), normal);
 		}
 		Func1T m_f1;
 		Func2T m_f2;
@@ -129,17 +156,27 @@ namespace hct
 	template<typename Func1T, typename Func2T> static inline CSGUnion<Func1T, Func2T>*
 	csg_union_new(Func1T f1, Func2T f2) { return new CSGUnion<Func1T, Func2T>(f1, f2); }
 
+
 	// ================ Intersection operator ==================
 	template<typename Func1T, typename Func2T>
 	struct CSGIntersection : public ICSGSurface<Func1T::D>
 	{
 		static constexpr unsigned int D = Func1T::D;
 		using VecT = typename Func1T::VecT;
-		using ScalarT = typename VecT::T;
+		using PlaneT = typename Func1T::PlaneT;
 		inline CSGIntersection(Func1T f1, Func2T f2) : m_f1(f1)	, m_f2(f2) {}
-		inline ScalarT operator () (VecT p) const override final
+		inline PlaneT operator () (VecT p) const override final
 		{ 
-			return std::max(m_f1(p), m_f2(p)); 
+			PlaneT plane1 = m_f1(p);
+			PlaneT plane2 = m_f2(p);
+			double d1 = plane1.val;
+			double d2 = plane2.val;
+			VecT n1(plane1);
+			VecT n2(plane2);
+			VecT normal;
+			if (d1 >= d2) { normal = n1; }
+			else { normal = n2; }
+			return make_vec(std::max(d1, d2), normal);
 		}
 		Func1T m_f1;
 		Func2T m_f2;
@@ -165,7 +202,7 @@ namespace hct
 	{
 		using VecT = typename FuncT::VecT;
 		inline CSGInside(FuncT f) : m_f(f) {}
-		inline bool operator () (VecT p) const { return m_f(p) <= 0; }
+		inline bool operator () (VecT p) const { return m_f(p).val <= 0; }
 		FuncT m_f;
 	};
 

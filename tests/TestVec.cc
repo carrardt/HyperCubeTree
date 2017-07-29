@@ -42,6 +42,8 @@ int main()
   cout<<"reverse("<<b<<") = "<<b.reverse()<<endl;
   cout << "map<square>("<<b<<") = " << b.map( [](double x) -> double {return x*x; } ) << endl;
 
+  cout << "-(" << a << ") = (" << (-a) << ")"<<endl;
+
   // bitfield tests
   for (size_t i = 0; i < 8; i++)
   {

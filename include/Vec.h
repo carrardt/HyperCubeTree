@@ -6,6 +6,8 @@
 #include <cmath>
 #include <string>
 
+#include "NumericalValueTraits.h"
+
 namespace hct
 {
 
@@ -72,6 +74,8 @@ namespace hct
 		inline T length2() const { return (T)0; }
 
 		inline bool less(Vec) const { return false; }
+
+		inline Vec operator - () const { return Vec(); }
 
 #define BINARY_VEC_OPERATOR(OP) template<typename T2> inline Vec<decltype(T() OP T2()),0> operator OP (const Vec<T2,0> b) const { return Vec<decltype(T() OP T2()),0>(); }
 #define BOOL_VEC_OPERATOR(OP) template<typename T2> inline Vec<bool,0> operator OP (const Vec<T2,0>& b) const { return Vec<bool,0>(); }
@@ -229,6 +233,11 @@ namespace hct
 
 		static inline bool less_operator(const Vec& a, const Vec& b) { return a.less(b); }
 
+		inline Vec operator - () const
+		{
+			return Vec(-val, Vec<T, D - 1>::operator - ());
+		}
+
 #define BINARY_VEC_OPERATOR(OP) \
 	template<typename T2> inline \
 	Vec<decltype(T() OP T2()),D> \
@@ -311,6 +320,21 @@ namespace hct
 	{
 		return Vec<int64_t, D>::fromBitfield(n);
 	}
+
+	template<typename T, unsigned int D>
+	static inline
+	Vec<T, D+1>
+	make_vec(T value, Vec<T, D> tail)
+	{
+		return Vec<T, D + 1>(value, tail);
+	}
+
+	// specialization of NumericalValueTraits
+	template <typename T, unsigned int D>
+	struct NumericalValueTraits< Vec<T, D> >
+	{
+		static constexpr size_t NumberOfComponents = D;
+	};
 
 }; // namespace hct
 

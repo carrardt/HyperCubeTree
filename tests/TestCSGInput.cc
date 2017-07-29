@@ -22,7 +22,7 @@ static inline void testSurfaceFunction(FuncT f, size_t N)
 		double y = static_cast<double>(std::rand()) / RAND_MAX;
 		double z = static_cast<double>(std::rand()) / RAND_MAX;
 		Vec3d p = { x,y,z };
-		double dist = f(p);
+		double dist = f(p).val;
 		if (dist > 0.0) { outsideDistSum += dist; }
 		else { insideDistSum += dist;}
 		bool inside = interior(p);

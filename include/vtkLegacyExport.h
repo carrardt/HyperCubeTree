@@ -101,7 +101,7 @@ namespace hct
 			for (size_t a = 0; a < nbArrays; a++)
 			{
 				ITreeLevelArray* iarray = tree.array(a);
-				out << "SCALARS " << iarray->name() << " float 1\nLOOKUP_TABLE default\n";
+				out << "SCALARS " << iarray->name() << " float "<< iarray->numberOfComponents()<<"\nLOOKUP_TABLE default\n";
 				tree.parseLeaves([&out,iarray](const typename Tree::DefaultTreeCursor & cursor)
 				{
 					iarray->toStream(out,cursor.cell());

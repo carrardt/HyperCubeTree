@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HyperCubeTreeCell.h"
+#include "NumericalValueTraits.h"
 
 #include <cstdint>
 #include <vector>
@@ -19,6 +20,7 @@ namespace hct
 			virtual void setNumberOfLevels(size_t nLevels) =0;
 			virtual void resize(size_t level, size_t nElems) =0;
 			virtual void erase(size_t level, size_t position, size_t nElems) =0;
+			virtual size_t numberOfComponents() const = 0;
 			virtual std::ostream& toStream(std::ostream&, HyperCubeTreeCell cell) const = 0;
 	};
 
@@ -66,6 +68,11 @@ namespace hct
 			{
 				out << m_arrays[cell.level()][cell.index()];
 				return out;
+			}
+
+			size_t numberOfComponents() const override final
+			{
+				return NumericalValueTraits<T>::NumberOfComponents;
 			}
 
 			inline const std::vector<T>& operator [] (size_t level) const
