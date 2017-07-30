@@ -2,7 +2,7 @@
 
 #include "HyperCubeTreeCursor.h"
 #include "HyperCubeTreeCell.h"
-#include "Vec.h"
+#include "HyperCubeTreeCellPosition.h"
 
 namespace hct
 {
@@ -21,21 +21,19 @@ struct HyperCubeTreeLocatedCursor : public hct::HyperCubeTreeCursor<_Tree>
 	using GridLocation = typename Tree::GridLocation;
 
 	// initialization constructors
-	inline HyperCubeTreeLocatedCursor(hct::Vec<double, D> domainSize, hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
+	inline HyperCubeTreeLocatedCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
 		: SuperClass(cell)
-		, m_origin(0.0)
-		, m_size(domainSize) {}
+		, m_position(0)
+		{}
 
 	// recursion constructor
 	inline HyperCubeTreeLocatedCursor(const Tree& tree, HyperCubeTreeLocatedCursor parent, SubdivisionGrid grid, GridLocation childLocation)
 		: SuperClass(tree, parent, grid, childLocation)
 	{
-		m_size = parent.m_size / grid;
-		m_origin = parent.m_origin + childLocation * m_size;
+		m_position = parent.m_position.refine(grid) + childLocation;
 	}
 
-	VecT m_origin;
-	VecT m_size;
+	HyperCubeTreeCellPosition m_position;
 };
 
 }
