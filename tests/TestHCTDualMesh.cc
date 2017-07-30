@@ -2,7 +2,8 @@
 #include "SimpleSubdivisionScheme.h"
 #include "GridDimension.h"
 #include "csg.h"
-#include "CellVertexConnectivity.h"
+#include "HyperCubeTreeVertexOwnershipCursor.h"
+#include "HyperCubeTreeDualMesh.h"
 
 #include <iostream> 
 #include <set>
@@ -15,52 +16,47 @@ std::ostream& operator << (std::ostream& out, hct::HyperCubeTreeCell c) { return
 using SubdivisionScheme = hct::SimpleSubdivisionScheme<3>;
 using Tree = hct::HyperCubeTree<3, SubdivisionScheme>;
 using HCTVertexOwnershipCursor = hct::HyperCubeTreeVertexOwnershipCursor<Tree>;
-using CellVertexConnectivity = hct::CellVertexConnectivity<Tree>;
-using CellVertexIds = CellVertexConnectivity::CellVertexIds;
-using VertexIdArray = CellVertexConnectivity::VertexIdArray;
-
-std::ostream& operator << (std::ostream& out, const CellVertexIds& cv)
-{
-	for (size_t i = 0; i < CellVertexConnectivity::CellNumberOfVertices; i++)
-	{
-		if (i > 0) out << ' ';
-		out << cv[i];
-	}
-	return out;
-}
+using TreeDualMesh = hct::HyperCubeTreeDualMesh<Tree>;
+using DuallCell = typename TreeDualMesh::DuallCell;
 
 // ==========================================================================
 // =============================== test method ==============================
 // ==========================================================================
 
-static void testTreeCellConnectivity(Tree& tree)
+static void testTreeDualMesh(Tree& tree)
 {
-	static constexpr size_t CellNumberOfVertices = CellVertexConnectivity::CellNumberOfVertices;
 	static constexpr unsigned int D = Tree::D;
-	VertexIdArray vertexIds;
 
 	auto T1 = std::chrono::high_resolution_clock::now();
 
-	// build connectivity
-	size_t nVertices = CellVertexConnectivity::compute(tree, vertexIds);
-
-	// verify that all values are set
-	size_t totalVertices = 0;
-	tree.postorderParseCells([nVertices,&totalVertices,&vertexIds](const typename Tree::DefaultTreeCursor& cursor)
+	size_t nDualCells = 0;
+	size_t nDualVertices = 0;
+	std::set< hct::HyperCubeTreeCellPosition<D> > dualCellCenters;
+	TreeDualMesh::parseDualCells(tree, [&nDualCells,&nDualVertices,&dualCellCenters](DuallCell& dual)
 	{
-		hct::HyperCubeTreeCell cell = cursor.cell();
-		for (size_t i = 0; i < CellNumberOfVertices; i++)
+		dualCellCenters.insert(dual.m_center);
+		//std::cout << "cell center : "; dual.m_center.toStream(std::cout);
+		std::set< hct::HyperCubeTreeCellPosition<D> > dualVertices;
+		for (auto& v : dual.m_vertices)
 		{
-			++totalVertices;
-			assert(vertexIds[cell][i] >= 0 && vertexIds[cell][i] < nVertices);
+			/*if (v.m_cell.isTreeCell())
+			{
+				std::cout << " " << v.m_cell;
+			}*/
+			dualVertices.insert(v.m_coord);
 		}
+		//std::cout << '\n';
+		++ nDualCells;
+		nDualVertices += dualVertices.size();
 	});
 
 	auto T2 = std::chrono::high_resolution_clock::now();
 	auto usec = std::chrono::duration_cast<std::chrono::microseconds>(T2 - T1);
 
 	tree.toStream(std::cout);
-	std::cout << "totalVertices=" << totalVertices << ", nVertices=" << nVertices << ", time="<< usec.count() <<"uS" << std::endl;
+	std::cout << "dual cells = " << nDualCells << std::endl;
+	std::cout << "unique cell centers = " << dualCellCenters.size() << std::endl;
+	std::cout << "average vertices per dual cell = "<< static_cast<double>(nDualVertices)/ nDualCells << std::endl;
 }
 
 
@@ -76,7 +72,7 @@ int main()
 		subdivisions.addLevelSubdivision({ 2,2,2 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
-		testTreeCellConnectivity(tree);
+		testTreeDualMesh(tree);
 	}
 
 	{
@@ -85,7 +81,7 @@ int main()
 		subdivisions.addLevelSubdivision({ 3,3,3 });
 		Tree tree(subdivisions);
 		tree.refine(tree.rootCell());
-		testTreeCellConnectivity(tree);
+		testTreeDualMesh(tree);
 	}
 
 	{
@@ -100,7 +96,7 @@ int main()
 		{
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
-		testTreeCellConnectivity(tree);
+		testTreeDualMesh(tree);
 	}
 
 	{
@@ -115,7 +111,7 @@ int main()
 		{
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
-		testTreeCellConnectivity(tree);
+		testTreeDualMesh(tree);
 	}
 
 	{
@@ -163,7 +159,7 @@ int main()
 		}
 		, HCTVertexOwnershipCursor(tree) );
 
-		testTreeCellConnectivity(tree);
+		testTreeDualMesh(tree);
 	}
 
 	{
@@ -201,7 +197,7 @@ int main()
 				for (size_t i = 0; i < CellNumberOfVertices; i++)
 				{
 					auto vertex = hct::bitfield_vec<Tree::D>(i);
-					Vec3d p = ( cursor.position() + vertex ).normalize();
+					Vec3d p = (cursor.position() + vertex).normalize();
 					if (shape(p).val > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}
@@ -213,9 +209,8 @@ int main()
 		}
 		, HCTVertexOwnershipCursor(tree));
 
-		testTreeCellConnectivity(tree);
+		testTreeDualMesh(tree);
 	}
-
 
 	return 0;
 }

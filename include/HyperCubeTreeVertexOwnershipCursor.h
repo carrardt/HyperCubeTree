@@ -4,6 +4,7 @@
 #include "HyperCube.h"
 #include "HyperCubeNeighbor.h"
 #include "HyperCubeTreeNeighborCursor.h"
+#include "HyperCubeTreeCellPosition.h"
 
 #include <array>
 #include <assert.h>
@@ -29,6 +30,7 @@ namespace hct
 		static constexpr unsigned int D = Tree::D;
 		static constexpr size_t NumberOfVertices = static_cast<size_t>(1) << D;
 		using Cell = hct::HyperCubeTreeCell;
+		using CellPosition = hct::HyperCubeTreeCellPosition<D>;
 		using SubdivisionGrid = typename Tree::SubdivisionGrid;
 		using GridLocation = typename Tree::GridLocation;
 		using HCubeComponentValue = typename SuperClass::HCubeComponentValue;
@@ -79,31 +81,28 @@ namespace hct
 				neighbor is a tree cell (not nil)
 				neighbor is a leaf
 				current cell is a leaf
+				neighbor and current cell have are at the same level
+			As a consequence :
+				neighbor vertex is shared with (is the same as) current cell's corresponding vertex (nbVertex==meVertex)
 			*/
 			template<typename VertBF> inline void operator () (VertBF)
 			{
-				// Note : this shoud be even more trivial.
-				// if we state that (meVertexPos == nbVertexPos).reduce_and() must be true, cell and neighbor have the same level,
-				// then we could just determine nbCellPos.less(meCellPos) from CompBF/VertBF
-
 				// VertBF => considered vertex
 				// m_cursor => global info about traversed cell of interest
-				// m_neighbor => neighbor potentially sharing considered vertex
-				size_t meVertex = VertBF::BITFIELD;
-				size_t compMask = CompBF::DEF_BITFIELD;
-				size_t nbVertex = meVertex ^ compMask;
-				hct::Vec<size_t, D> meVertexPos = (m_cursor.position() + hct::bitfield_vec<D>(meVertex)) *  m_neighbor.m_resolution;
-				hct::Vec<size_t, D> nbVertexPos = (m_neighbor.m_position + hct::bitfield_vec<D>(nbVertex)) * m_cursor.resolution();
-
-				assert( (meVertexPos == nbVertexPos).reduce_and() );
-				if ((meVertexPos == nbVertexPos).reduce_and()) // if me and neighbor share this vertex and both are leaves, then ...
+				// m_neighbor => neighbor sharing considered vertex
+				constexpr size_t meVertex = VertBF::BITFIELD;
+				CellPosition meCellPos = m_cursor.position();
+				CellPosition nbCellPos = m_neighbor.m_position;
+#				ifndef NDEBUG
+				constexpr size_t compMask = CompBF::DEF_BITFIELD;
+				constexpr size_t nbVertex = meVertex ^ compMask;
+				CellPosition meVertexPos = meCellPos + hct::bitfield_vec<D>(meVertex);
+				CellPosition nbVertexPos = nbCellPos  + hct::bitfield_vec<D>(nbVertex);
+				assert( meVertexPos == nbVertexPos );
+#				endif
+				if ( nbCellPos < meCellPos ) // neighbor has priority, i loose ownership
 				{
-					hct::Vec<size_t, D> meCellPos = m_cursor.position() *  m_neighbor.m_resolution;
-					hct::Vec<size_t, D> nbCellPos = m_neighbor.m_position * m_cursor.resolution();
-					if ( nbCellPos.less(meCellPos) ) // neighbor has priority, i loose ownership
-					{
-						m_ownVertex[meVertex] = false;
-					}
+					m_ownVertex[meVertex] = false;
 				}
 			}
 
@@ -132,7 +131,7 @@ namespace hct
 					// if neighbor is not a tree cell (e.g. nil), it cannot still any ownership
 					if (neighbor.m_cell.isTreeCell())
 					{
-						// if neighbor has sub-cells, then it sub-cells wil still all shared vertices ownership
+						// if neighbor has sub-cells, then it sub-cells will still all shared vertices ownership
 						if (!m_tree.isLeaf(neighbor.m_cell))
 						{
 							assert(neighbor.m_cell.level() == m_cursor.cell().level());

@@ -315,10 +315,10 @@ namespace hct
 
 	template<unsigned int D>
 	static inline
-	Vec<int64_t, D>
-	bitfield_vec(uint64_t n)
+	Vec<size_t, D>
+	bitfield_vec(size_t n)
 	{
-		return Vec<int64_t, D>::fromBitfield(n);
+		return Vec<size_t, D>::fromBitfield(n);
 	}
 
 	template<typename T, unsigned int D>

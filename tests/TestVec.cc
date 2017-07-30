@@ -41,7 +41,6 @@ int main()
   cout<<"reduce_mul("<<b<<") = "<<b.reduce_mul()<<endl;
   cout<<"reverse("<<b<<") = "<<b.reverse()<<endl;
   cout << "map<square>("<<b<<") = " << b.map( [](double x) -> double {return x*x; } ) << endl;
-
   cout << "-(" << a << ") = (" << (-a) << ")"<<endl;
 
   // bitfield tests

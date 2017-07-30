@@ -280,8 +280,10 @@ namespace hct
 
   /* helper template to determine what is the vertex index (aka bitfield) of cell in the dual mesh,
   relative to a vertex in the primary mesh.
+
+  VertBF is the primary vertex, CompBF is the neighbor component.
   */
-  /*
+  
   template<typename CompBF, typename VertBF> struct NeighborDualVertex {};
   template<> struct NeighborDualVertex<NullBitField, NullBitField>
   {
@@ -290,24 +292,24 @@ namespace hct
   template<typename CompBFTail, typename VertBFTail>
   struct NeighborDualVertex< CBitField<Bit0, CompBFTail>, CBitField<Bit0, VertBFTail> >
   {
-  using Vertex = CBitField<Bit0, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+  using Vertex = CBitField<Bit0, typename NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
   };
   template<typename CompBFTail, typename VertBFTail>
   struct NeighborDualVertex< CBitField<Bit1, CompBFTail>, CBitField<Bit1, VertBFTail> >
   {
-  using Vertex = CBitField<Bit1, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+  using Vertex = CBitField<Bit1, typename NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
   };
   template<typename CompBFTail, typename VertBFTail>
   struct NeighborDualVertex< CBitField<BitX, CompBFTail>, CBitField<Bit0, VertBFTail> >
   {
-  using Vertex = CBitField<Bit1, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+  using Vertex = CBitField<Bit1, typename NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
   };
   template<typename CompBFTail, typename VertBFTail>
   struct NeighborDualVertex< CBitField<BitX, CompBFTail>, CBitField<Bit1, VertBFTail> >
   {
-  using Vertex = CBitField<Bit0, NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
+  using Vertex = CBitField<Bit0, typename NeighborDualVertex<CompBFTail, VertBFTail>::Vertex >;
   };
-  */
+  
 
 
 }; // namespace hct

@@ -78,8 +78,7 @@ int main(int argc, char* argv[])
 			for (size_t i = 0; i < CellNumberOfVertices; i++)
 			{
 				auto vertex = hct::bitfield_vec<Tree::D>(i);
-				Vec3d p = cursor.position() + vertex;
-				p /= cursor.resolution();
+				Vec3d p = (cursor.position() + vertex).normalize();
 				if (shape(p).val > 0.0) { allInside = false; }
 				else { allOutside = false; }
 			}

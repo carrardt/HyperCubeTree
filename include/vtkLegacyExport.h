@@ -34,24 +34,13 @@ namespace hct
 			out << "ASCII\n";
 			out << "DATASET UNSTRUCTURED_GRID\n";
 
-			size_t nSubdivs = tree.getNumberOfLevelSubdivisions();
-			std::vector< PositionI > resolutionMultiplier( nSubdivs+1 , PositionI(1) );
-			for (size_t i = 0; i < nSubdivs ; i++)
-			{
-				resolutionMultiplier[i] = tree.getLevelSubdivisionGrid(i);
-			}
-			for (size_t i = nSubdivs; i > 0; i--)
-			{
-				resolutionMultiplier[i-1] *= resolutionMultiplier[i];
-			}
-
 			// build connectivity
 			VertexIdArray vertexIds;
 			size_t nVertices = CellVertexConnectivity::compute(tree, vertexIds);
 			std::vector< HyperCubeTreeCell > leaves;
 
 			out << "POINTS " << nVertices << " double\n";
-			tree.parseLeaves( [&out, &leaves, &resolutionMultiplier](const HCTVertexOwnershipCursor& cursor)
+			tree.parseLeaves( [&out, &leaves](const HCTVertexOwnershipCursor& cursor)
 			{
 				using HCubeComponentValue = typename HCTVertexOwnershipCursor::HCubeComponentValue;
 				constexpr size_t CellNumberOfVertices = 1 << Tree::D;
@@ -60,11 +49,7 @@ namespace hct
 					if (cursor.ownsVertex(i))
 					{
 						auto vertex = hct::bitfield_vec<Tree::D>(i);
-						PositionI p = cursor.position() + vertex;
-						p *= resolutionMultiplier[cursor.cell().level()];
-						PositionF pcoord = p;
-						pcoord /= resolutionMultiplier[0];
-						pcoord.toStream(out, " ");
+						(cursor.position() + vertex).normalize().toStream(out, " ");
 						out << '\n';
 					}
 				}

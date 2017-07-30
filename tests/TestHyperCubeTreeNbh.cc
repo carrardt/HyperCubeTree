@@ -131,14 +131,14 @@ struct CompEnumFunc
 		size_t compMask = CompBF::DEF_BITFIELD;
 		size_t nbVertex = meVertex ^ compMask;
 
-		hct::Vec<size_t, D> meVertexPos = ( me.m_position + hct::bitfield_vec<D>(meVertex) ) *  m_neighbor.m_resolution ;
-		hct::Vec<size_t, D> nbVertexPos = ( m_neighbor.m_position + hct::bitfield_vec<D>(nbVertex) ) * me.m_resolution ;
+		hct::HyperCubeTreeCellPosition<D> meVertexPos = me.m_position + hct::bitfield_vec<D>(meVertex)  ;
+		hct::HyperCubeTreeCellPosition<D> nbVertexPos = m_neighbor.m_position + hct::bitfield_vec<D>(nbVertex) ;
 
-		if ((meVertexPos == nbVertexPos).reduce_and())
+		if ( meVertexPos == nbVertexPos )
 		{
 			Vec3d p = m_comp.m_cellVertices[meCell].m_vertices[meVertex];
 			Vec3d n = m_comp.m_cellVertices[nbCell].m_vertices[nbVertex];
-			double d = (n - p).abs().reduce_max(); // TODO: replace this with L-inf norm (max component wise absolute difference)
+			double d = (n - p).abs().reduce_max(); 
 			m_comp.m_maxVertexDist2 = std::max(d, m_comp.m_maxVertexDist2);
 			if (d > 1.e-16)
 			{

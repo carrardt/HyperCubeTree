@@ -3,6 +3,8 @@
 #include "HyperCubeTreeCell.h"
 #include "HyperCube.h"
 #include "HyperCubeNeighbor.h"
+#include "HyperCubeTreeCellPosition.h"
+
 #include <assert.h>
 
 namespace hct
@@ -17,17 +19,15 @@ namespace hct
 		using Tree = _Tree;
 		static constexpr unsigned int D = Tree::D;
 		using Cell = hct::HyperCubeTreeCell;
+		using CellPosition = hct::HyperCubeTreeCellPosition<D>;
 
 		// Type of the value to be stored at each neighborhood hypercube's component
 		struct HCubeComponentValue
 		{
 			inline hct::HyperCubeTreeCell cell() const { return m_cell; }
-			inline Vec<size_t, D> resolution() const { return m_resolution; }
-			inline Vec<size_t, D> position() const { return m_position; }
-
+			inline CellPosition position() const { return m_position; }
 			hct::HyperCubeTreeCell m_cell; // neighbor cell
-			Vec<size_t, D> m_resolution; // resolution in which position is expressed
-			Vec<size_t, D> m_position; // poisition of the cell
+			CellPosition m_position;
 		};
 
 		using HCube = HyperCube< HCubeComponentValue, D >;
@@ -41,8 +41,7 @@ namespace hct
 			m_nbh.forEachValue([](HCubeComponentValue& comp )
 				{ 
 					comp.m_cell = hct::HyperCubeTreeCell::nil();
-					comp.m_resolution = Vec<size_t, D>(1);
-					comp.m_position = Vec<size_t, D>(0); // questionable, should be adjusted
+					comp.m_position = CellPosition{ 0 , 1 };
 				});
 			m_nbh.self().m_cell = cell;
 		}
@@ -63,8 +62,7 @@ namespace hct
 				if ( !m_tree.isTerminal(parentNeighbor.value.m_cell) )
 				{
 					childNeighbor.value.m_cell = m_tree.child(parentNeighbor.value.m_cell, neighborChildLocation);
-					childNeighbor.value.m_resolution = parentNeighbor.value.m_resolution * subdivisionGrid;
-					childNeighbor.value.m_position = parentNeighbor.value.m_position * subdivisionGrid + neighborChildLocation;
+					childNeighbor.value.m_position = parentNeighbor.value.m_position.refine(subdivisionGrid) + neighborChildLocation;
 				}
 				else
 				{
@@ -86,14 +84,9 @@ namespace hct
 			return m_nbh.self().m_cell;
 		}
 
-		inline Vec<size_t, D> position() const
+		inline CellPosition position() const
 		{
 			return m_nbh.self().m_position;
-		}
-
-		inline Vec<size_t, D> resolution() const
-		{
-			return m_nbh.self().m_resolution;
 		}
 
 		HCube m_nbh;
