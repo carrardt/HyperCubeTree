@@ -11,8 +11,8 @@ namespace hct
 		using VecI = Vec<size_t, D>;
 		using VecF = Vec<double, D>;
 
-		VecI m_position; // position
-		VecI m_resolution; // resolution at wich position is expressed
+		inline HyperCubeTreeCellPosition() : m_position(0), m_resolution(1) {}
+		inline HyperCubeTreeCellPosition(VecI p, VecI r) : m_position(p), m_resolution(r) {}
 
 		inline bool operator == (const HyperCubeTreeCellPosition& v) const
 		{
@@ -50,12 +50,19 @@ namespace hct
 			return HyperCubeTreeCellPosition{ m_position*2 + 1 , m_resolution*2 };
 		}
 
+		inline bool boundary() const
+		{
+			return (m_position == VecI(0)).reduce_or() || (m_position == m_resolution).reduce_or();
+		}
+
 		template<typename StreamT>
-		inline StreamT& toStream(StreamT& out)
+		inline StreamT& toStream(StreamT& out) const
 		{
 			return normalize().toStream(out);
 		}
 
+		VecI m_position; // position
+		VecI m_resolution; // resolution at wich position is expressed
 	};
 
 

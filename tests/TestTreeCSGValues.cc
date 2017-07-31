@@ -33,10 +33,7 @@ int main()
 	auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
 	auto shape = hct::csg_difference(sphereA, sphereB);
 
-	TreeCursor cursor( Vec3d(1.0) );
-	std::cout << "Domain bounds = " << cursor.m_size << std::endl;
-
-	Vec3d cellSize = cursor.m_size;
+	Vec3d cellSize = Vec3d(1.0);
 	std::cout << "level 0 : size = " << cellSize << std::endl;
 	for (size_t i = 0; i < subdivisions.getNumberOfLevelSubdivisions(); i++)
 	{
@@ -45,7 +42,7 @@ int main()
 	}
 
 	tree.preorderParseCells(
-		[shape, &tree](TreeCursor cursor)
+		[shape, &tree](const TreeCursor& cursor)
 		{
 			if (tree.isRefinable(cursor.cell()))
 			{
@@ -55,7 +52,7 @@ int main()
 				for (size_t i = 0; i < nVertices; i++)
 				{
 					auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
-					Vec3d p = cursor.m_origin + vertex * cursor.m_size;
+					Vec3d p = ( cursor.m_position + vertex ).normalize();
 					if (shape(p).val > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}
@@ -65,7 +62,7 @@ int main()
 				}
 			}
 		}
-		, cursor);
+		, TreeCursor() );
 
 	hct::TreeLevelArray<double> cellSurfaceDistance;
 	tree.addArray(&cellSurfaceDistance);
@@ -80,17 +77,17 @@ int main()
 	tree.addArray(&cellInside);
 
 	tree.preorderParseCells(
-		[shape, &cellSurfaceDistance, &cellLevel, &cellIndex, &cellInside](TreeCursor cursor)
+		[shape, &cellSurfaceDistance, &cellLevel, &cellIndex, &cellInside](const TreeCursor& cursor)
 		{
 			hct::HyperCubeTreeCell cell = cursor.cell();
-			Vec3d p = cursor.m_origin + ( cursor.m_size * 0.5 );
+			Vec3d p = cursor.m_position.addHalfUnit().normalize();
 			double surfDist = shape(p).val;
 			cellSurfaceDistance[cell] = surfDist;
 			cellLevel[cell] = cell.level();
 			cellIndex[cell] = cell.index();
 			cellInside[cell] = (surfDist <= 0.0);
 		}
-		, cursor);
+		, TreeCursor() );
 
 	tree.toStream(std::cout);
 

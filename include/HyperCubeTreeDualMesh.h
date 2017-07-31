@@ -53,7 +53,6 @@ namespace hct
 			DuallCell& m_dual;
 		};
 
-
 		template<typename FuncT>
 		struct VertexFunctor
 		{

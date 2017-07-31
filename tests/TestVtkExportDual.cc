@@ -5,7 +5,7 @@
 #include "HyperCubeTreeLocatedCursor.h"
 #include "csg.h"
 #include "csg_input.h"
-#include "vtkLegacyExport.h"
+#include "vtkLegacyExportDual.h"
 
 #include <iostream>
 #include <fstream>
@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	std::cout<<"output unstructured grid to "<<argv[3] << std::endl;
-	hct::vtk::exportUnstructuredGrid(tree, output);
+	hct::vtk::exportDualUnstructuredGrid(tree, output);
 
 	return 0;
 }

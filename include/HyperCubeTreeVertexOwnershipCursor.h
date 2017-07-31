@@ -121,7 +121,7 @@ namespace hct
 
 			/*
 			prerequistes :
-				current cell is a leaf (otherwise all vertices ownership is lost)
+				current cell is a leaf (otherwise all vertices ownership are lost)
 			*/
 			template<typename HCubeComp>
 			inline void operator () (HCubeComponentValue& neighbor, HCubeComp)

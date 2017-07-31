@@ -50,21 +50,19 @@ static void testTreeNeighborhood(Tree& tree)
 		domain *= subdivisions.getLevelSubdivision(i);
 	}
 	std::cout << "Domain bounds = " << domain << std::endl;
-	TreeCursor cursor(domain);
+	TreeCursor cursor;
 
 	// compute vertex coords
 	using CellVerticesT = CellVertices<3>;
 	hct::TreeLevelArray< CellVerticesT > cellVertices;
 	tree.addArray(&cellVertices);
-	tree.preorderParseCells([&tree, &cellVertices](TreeCursor cursor)
+	tree.preorderParseCells([&tree, &cellVertices, domain](const TreeCursor& cursor)
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
 		constexpr size_t nVertices = 1 << TreeCursor::D;
 		for (size_t i = 0; i < nVertices; i++)
 		{
-			auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
-			Vec3d offset = vertex * cursor.m_size;
-			Vec3d p = cursor.m_origin + offset;
+			Vec3d p = (cursor.m_position + hct::bitfield_vec<TreeCursor::D>(i) ).normalize() * domain;
 			//std::cout <<"i="<<i<<", origin=" << cursor.m_origin << ", size=" << cursor.m_size << ", vertex=" << vertex << ", offset=" << offset << ", p=" << p << std::endl;
 			cellVertices[cell].m_vertices[i] = p;
 		}
@@ -192,26 +190,23 @@ static void testTreeNeighborhood2(Tree& tree)
 		domain *= subdivisions.getLevelSubdivision(i);
 	}
 	std::cout << "Domain bounds = " << domain << std::endl;
-	TreeCursor cursor(domain);
 
 	// compute vertex coords
 	using CellVerticesT = CellVertices<3>;
 	hct::TreeLevelArray< CellVerticesT > cellVertices;
 	tree.addArray(&cellVertices);
-	tree.preorderParseCells([&tree, &cellVertices](TreeCursor cursor)
+	tree.preorderParseCells([&tree, &cellVertices, domain](const TreeCursor& cursor)
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
 		constexpr size_t nVertices = 1 << TreeCursor::D;
 		for (size_t i = 0; i < nVertices; i++)
 		{
-			auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
-			Vec3d offset = vertex * cursor.m_size;
-			Vec3d p = cursor.m_origin + offset;
+			Vec3d p = ( cursor.m_position + hct::bitfield_vec<TreeCursor::D>(i) ).normalize() * domain;
 			//std::cout <<"i="<<i<<", origin=" << cursor.m_origin << ", size=" << cursor.m_size << ", vertex=" << vertex << ", offset=" << offset << ", p=" << p << std::endl;
 			cellVertices[cell].m_vertices[i] = p;
 		}
 	}
-	, cursor);
+	, TreeCursor());
 
 	tree.toStream(std::cout);
 
@@ -312,9 +307,7 @@ int main()
 		{
 			tree.refine(tree.child(tree.rootCell(), i));
 		}
-
-		Vec3d domainUnitSize(1.0);
-		TreeCursor cursor(domainUnitSize);
+		TreeCursor cursor;
 
 		auto sphereA = hct::csg_sphere(Vec3d({ 0.0,0.0,0.0 }), 1.0);
 		auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
@@ -332,8 +325,7 @@ int main()
 				bool allOutside = true;
 				for (size_t i = 0; i < nVertices; i++)
 				{
-					auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
-					Vec3d p = cursor.m_origin + vertex * cursor.m_size;
+					Vec3d p = ( cursor.m_position + hct::bitfield_vec<TreeCursor::D>(i) ).normalize();
 					if (shape(p).val > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}

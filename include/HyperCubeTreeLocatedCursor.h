@@ -19,12 +19,12 @@ struct HyperCubeTreeLocatedCursor : public hct::HyperCubeTreeCursor<_Tree>
 	using VecT = hct::Vec<double, D>;
 	using SubdivisionGrid = typename Tree::SubdivisionGrid;
 	using GridLocation = typename Tree::GridLocation;
+	using CellPosition = hct::HyperCubeTreeCellPosition<D>;
 
 	// initialization constructors
 	inline HyperCubeTreeLocatedCursor(hct::HyperCubeTreeCell cell = hct::HyperCubeTreeCell())
 		: SuperClass(cell)
-		, m_position(0)
-		{}
+	{}
 
 	// recursion constructor
 	inline HyperCubeTreeLocatedCursor(const Tree& tree, HyperCubeTreeLocatedCursor parent, SubdivisionGrid grid, GridLocation childLocation)
@@ -33,7 +33,7 @@ struct HyperCubeTreeLocatedCursor : public hct::HyperCubeTreeCursor<_Tree>
 		m_position = parent.m_position.refine(grid) + childLocation;
 	}
 
-	HyperCubeTreeCellPosition m_position;
+	CellPosition m_position; // default constructor sets position to 0 and resolution to 1
 };
 
 }
