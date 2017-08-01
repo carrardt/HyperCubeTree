@@ -33,6 +33,17 @@ struct HyperCubeTreeLocatedCursor : public hct::HyperCubeTreeCursor<_Tree>
 		m_position = parent.m_position.refine(grid) + childLocation;
 	}
 
+	inline CellPosition position() const
+	{
+		return m_position;
+	}
+
+	inline CellPosition vertexPosition(size_t i) const
+	{
+		return position() + hct::bitfield_vec<D>(i);
+	}
+
+private:
 	CellPosition m_position; // default constructor sets position to 0 and resolution to 1
 };
 

@@ -44,13 +44,13 @@ namespace hct
 			out << "POINTS " << nLeaves << " double\n";
 
 			TreeLevelArray<int64_t> leafIndex;
-			tree.fitArray(leafIndex);
+			tree.fitArray(&leafIndex);
 			leafIndex.fill(-1);
 			tree.parseLeaves( [&out, &nLeaves, &leafIndex](const HyperCubeTreeLocatedCursor& cursor)
 			{
 				leafIndex[cursor.cell()] = nLeaves;
 				++nLeaves;
-				cursor.m_position.normalize().toStream(out, " ");
+				cursor.position().normalize().toStream(out, " ");
 			}
 			, HyperCubeTreeLocatedCursor() );
 
@@ -59,11 +59,12 @@ namespace hct
 			tree.parseLeaves(
 				[&numberOfCells](const HCTVertexOwnershipCursor& cursor)
 				{
+					constexpr size_t CellNumberOfVertices = 1 << Tree::D;
 					for (size_t i = 0; i < CellNumberOfVertices; i++)
 					{
 						if (cursor.ownsVertex(i))
 						{
-							auto v = m_cursor.position() + bitfield_vec<D>(i);
+							auto v = cursor.vertexPosition(i);
 							if (!v.boundary())
 							{
 								++numberOfCells;
@@ -71,13 +72,23 @@ namespace hct
 						}
 					}
 				}
-				, HCTVertexOwnershipCursor() );
+				, HCTVertexOwnershipCursor(tree) );
 
 			// write cell connectivity
 			out << "CELLS " << numberOfCells << ' ' << numberOfCells*(CellNumberOfVertices+1) << '\n';
 			DualMesh::parseDualCells( tree,
-				[](const DuallCell& dual)
+				[&out,&leafIndex](const DuallCell& dual)
 				{
+					constexpr size_t CellNumberOfVertices = 1 << Tree::D;
+					if (!dual.m_center.boundary())
+					{
+						out << CellNumberOfVertices;
+						for (size_t i = 0; i < CellNumberOfVertices; i++)
+						{
+							assert(leafIndex[dual.m_vertices[i].m_cell] != -1);
+							out << ' ' << leafIndex[dual.m_vertices[i].m_cell];
+						}
+					}
 				});
 
 			out << "CELL_TYPES " << numberOfCells << '\n';

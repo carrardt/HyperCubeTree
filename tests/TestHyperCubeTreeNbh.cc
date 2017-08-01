@@ -62,7 +62,7 @@ static void testTreeNeighborhood(Tree& tree)
 		constexpr size_t nVertices = 1 << TreeCursor::D;
 		for (size_t i = 0; i < nVertices; i++)
 		{
-			Vec3d p = (cursor.m_position + hct::bitfield_vec<TreeCursor::D>(i) ).normalize() * domain;
+			Vec3d p = cursor.vertexPosition(i).normalize() * domain;
 			//std::cout <<"i="<<i<<", origin=" << cursor.m_origin << ", size=" << cursor.m_size << ", vertex=" << vertex << ", offset=" << offset << ", p=" << p << std::endl;
 			cellVertices[cell].m_vertices[i] = p;
 		}
@@ -201,7 +201,7 @@ static void testTreeNeighborhood2(Tree& tree)
 		constexpr size_t nVertices = 1 << TreeCursor::D;
 		for (size_t i = 0; i < nVertices; i++)
 		{
-			Vec3d p = ( cursor.m_position + hct::bitfield_vec<TreeCursor::D>(i) ).normalize() * domain;
+			Vec3d p = cursor.vertexPosition(i).normalize() * domain;
 			//std::cout <<"i="<<i<<", origin=" << cursor.m_origin << ", size=" << cursor.m_size << ", vertex=" << vertex << ", offset=" << offset << ", p=" << p << std::endl;
 			cellVertices[cell].m_vertices[i] = p;
 		}
@@ -325,7 +325,7 @@ int main()
 				bool allOutside = true;
 				for (size_t i = 0; i < nVertices; i++)
 				{
-					Vec3d p = ( cursor.m_position + hct::bitfield_vec<TreeCursor::D>(i) ).normalize();
+					Vec3d p = cursor.vertexPosition(i).normalize();
 					if (shape(p).val > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}

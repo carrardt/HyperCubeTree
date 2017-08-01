@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 	tree.parseLeaves([shape,&cellSurfaceDistance,&cellSurfaceNormal](const LocatedTreeCursor& cursor)
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
-		Vec3d p = cursor.m_position.addHalfUnit().normalize();
+		Vec3d p = cursor.position().addHalfUnit().normalize();
 		Vec4d plane = shape(p);
 		double surfDist = plane.val;
 		Vec3d normal(plane);

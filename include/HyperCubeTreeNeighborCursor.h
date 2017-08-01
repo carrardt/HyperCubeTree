@@ -89,6 +89,11 @@ namespace hct
 			return m_nbh.self().m_position;
 		}
 
+		inline CellPosition vertexPosition(size_t i) const
+		{
+			return position() + hct::bitfield_vec<D>(i);
+		}
+
 		HCube m_nbh;
 	};
 

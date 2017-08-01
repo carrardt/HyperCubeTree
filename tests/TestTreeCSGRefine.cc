@@ -34,10 +34,7 @@ static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 	auto sphereB = hct::csg_sphere(Vec3d({ 0.5,0.5,0.5 }), 0.5);
 	auto shape = hct::csg_difference(sphereA, sphereB);
 
-	TreeCursor cursor( Vec3d(1.0) );
-	std::cout << "Domain bounds = " << cursor.m_size << std::endl;
-
-	Vec3d cellSize = cursor.m_size;
+	Vec3d cellSize = Vec3d(1.0);
 	std::cout << "level 0 : size = " << cellSize << std::endl;
 	for (size_t i = 0; i < subdivisions.getNumberOfLevelSubdivisions(); i++)
 	{
@@ -57,8 +54,7 @@ static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 			bool allOutside = true;
 			for (size_t i = 0; i < nVertices; i++)
 			{
-				auto vertex = hct::bitfield_vec<TreeCursor::D>(i);
-				Vec3d p = cursor.m_origin + vertex * cursor.m_size;
+				Vec3d p = cursor.vertexPosition(i).normalize();
 				if ( shape(p).val > 0.0) { allInside = false; }
 				else { allOutside = false; }
 			}
@@ -68,7 +64,7 @@ static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 			}
 		}
 	}
-	, cursor);
+	, TreeCursor() );
 
 	auto T2 = std::chrono::high_resolution_clock::now();
 	auto usec = std::chrono::duration_cast<std::chrono::microseconds>(T2 - T1);
