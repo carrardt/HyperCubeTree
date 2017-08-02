@@ -27,7 +27,6 @@ namespace hct
 		static inline bool div(const bool a, const bool b) { return ( a && b ); }
 	};
 
-
 	/*
 	The Vec template class is meant to represent vectors of fixed size and type.
 	They are recursively defined to fit the needs of hyper-cube neighborhood finding algorithm, mainly.
@@ -213,7 +212,7 @@ namespace hct
 		inline T reduce_mul() const { return vec_operation_helper<T>::mul( val , Vec<T, D - 1>::reduce_mul() ); }
 		inline T reduce_add() const { return vec_operation_helper<T>::add( val , Vec<T, D - 1>::reduce_add() ); }
 		inline bool reduce_and() const { return (static_cast<bool>(val) && Vec<T, D - 1>::reduce_and()); }
-		inline bool reduce_or() const { return (static_cast<bool>(val) || Vec<T, D - 1>::reduce_and()); }
+		inline bool reduce_or() const { return (static_cast<bool>(val) || Vec<T, D - 1>::reduce_or()); }
 		inline T reduce_max() const { return std::max(val, Vec<T, D - 1>::reduce_max()); }
 
 		// Valeur absolue

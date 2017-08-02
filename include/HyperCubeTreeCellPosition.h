@@ -58,7 +58,10 @@ namespace hct
 		template<typename StreamT>
 		inline StreamT& toStream(StreamT& out) const
 		{
-			return normalize().toStream(out);
+			m_position.toStream(out);
+			out << "/";
+			m_resolution.toStream(out);
+			return out;
 		}
 
 		VecI m_position; // position

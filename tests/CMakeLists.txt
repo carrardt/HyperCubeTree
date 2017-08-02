@@ -1,3 +1,5 @@
+add_definitions(-DPROFILING=1 -DHCT_DATA_DIR=\"${CMAKE_SOURCE_DIR}/data\")
+
 add_executable(TestConstBits TestConstBits.cc)
 add_executable(TestPointIds TestPointIds.cc)
 add_executable(TestVec TestVec.cc)
@@ -20,3 +22,4 @@ add_executable(TestVtkExport TestVtkExport.cc)
 add_executable(TestHCTCellVertexConnectivity TestHCTCellVertexConnectivity.cc)
 add_executable(TestHCTDualMesh TestHCTDualMesh.cc)
 add_executable(TestVtkExportDual TestVtkExportDual.cc)
+add_executable(TestCellPosition TestCellPosition.cc)

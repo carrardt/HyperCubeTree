@@ -85,6 +85,7 @@ namespace hct
 						out << CellNumberOfVertices;
 						for (size_t i = 0; i < CellNumberOfVertices; i++)
 						{
+							assert(dual.m_vertices[i].m_cell.isTreeCell());
 							assert(leafIndex[dual.m_vertices[i].m_cell] != -1);
 							out << ' ' << leafIndex[dual.m_vertices[i].m_cell];
 						}

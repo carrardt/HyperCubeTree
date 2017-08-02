@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <array>
 #include <set>
+#include <assert.h>
 using namespace std;
 
 using namespace hct;
@@ -61,6 +62,16 @@ int main()
   {
 	  cout << v << std::endl;
   }
+
+  cout << "test reduction\n";
+  hct::Vec<bool, 3> mask({ true,false,false });
+  cout << mask << ", reduce_or=" << mask.reduce_or() << ", reduce_and=" << mask.reduce_and() << "\n";;
+  assert(mask.reduce_or() == true);
+  assert(mask.reduce_and() == false);
+  mask = hct::Vec<bool, 3>({ true,true,true });
+  assert(mask.reduce_and() == true);
+  mask = hct::Vec<bool, 3>({ false,false,false });
+  assert(mask.reduce_or() == false);
 
   return 0;
 }

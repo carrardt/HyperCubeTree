@@ -27,19 +27,22 @@ std::ostream& operator << (std::ostream& out, Vec3d p)
 
 int main(int argc, char* argv[])
 {
-	if (argc < 4)
-	{
-		std::cout << "Usage : "<<argv[0]<<" levels.div input.csg output.vtk" << std::endl;
-		return 1;
-	}
+	std::string subdivisionFileName = std::string(HCT_DATA_DIR) + "/levels_8x8x8_3x3x3_x2.div";
+	std::string csgFileName = std::string(HCT_DATA_DIR) + "/deathstar.csg";
+	std::string outputFileName = std::string(HCT_DATA_DIR) + "/output.vtk";
 
-	std::ifstream levels_input(argv[1]);
+	if (argc >= 2) { subdivisionFileName = argv[1]; }
+	if (argc >= 3) { csgFileName = argv[2]; }
+	if (argc >= 4) { outputFileName = argv[3]; }
+
+
+	std::ifstream levels_input(subdivisionFileName);
 	if (!levels_input)
 	{
-		std::cerr << "Error opening file '" << argv[1] << "'" << std::endl;
+		std::cerr << "Error opening file '" << subdivisionFileName << "'" << std::endl;
 		return 1;
 	}
-	std::cout << "read levels from " << argv[1] << '\n';
+	std::cout << "read levels from " << subdivisionFileName << '\n';
 	std::cout.flush();
 	SubdivisionScheme subdivisions;
 	subdivisions.fromStream(levels_input);
@@ -52,13 +55,13 @@ int main(int argc, char* argv[])
 		tree.refine(tree.child(tree.rootCell(), i));
 	}
 
-	std::ifstream input(argv[2]);
+	std::ifstream input(csgFileName);
 	if (!input)
 	{
-		std::cerr<<"Error opening file '"<<argv[2]<<"'"<< std::endl;
+		std::cerr<<"Error opening file '"<< csgFileName <<"'"<< std::endl;
 		return 1;
 	}
-	std::cout << "read CSG from '" << argv[2] << "'" << std::endl;
+	std::cout << "read CSG from '" << csgFileName << "'" << std::endl;
 	std::cout.flush();
 	auto shape = hct::csg_input<3>(input);
 
@@ -115,13 +118,13 @@ int main(int argc, char* argv[])
 
 	tree.toStream(std::cout);
 
-	std::ofstream output(argv[3]);
+	std::ofstream output(outputFileName);
 	if (!output)
 	{
-		std::cerr << "Error opening file '" << argv[3] << "'" << std::endl;
+		std::cerr << "Error opening file '" << outputFileName << "'" << std::endl;
 		return 1;
 	}
-	std::cout<<"output unstructured grid to "<<argv[3] << std::endl;
+	std::cout<<"output unstructured grid to "<< outputFileName << std::endl;
 	hct::vtk::exportDualUnstructuredGrid(tree, output);
 
 	return 0;

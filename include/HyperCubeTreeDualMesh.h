@@ -68,7 +68,7 @@ namespace hct
 				if (m_cursor.ownsVertex(i))
 				{
 					DuallCell dual;
-					dual.m_center = m_cursor.position() + hct::bitfield_vec<D>(i);
+					dual.m_center = m_cursor.vertexPosition(i);
 					m_cursor.m_nbh.forEachComponentSharingVertex(VertBF(), VertexNeighborCellFunctor<VertBF,FuncT>(m_cursor, dual ));
 					m_f(dual);
 				}
