@@ -46,13 +46,17 @@ namespace hct
 			TreeLevelArray<int64_t> leafIndex;
 			tree.fitArray(&leafIndex);
 			leafIndex.fill(-1);
-			tree.parseLeaves( [&out, &nLeaves, &leafIndex](const HyperCubeTreeLocatedCursor& cursor)
+			size_t leafCounter = 0;
+			tree.parseLeaves( [&out, &leafCounter, &leafIndex](const HyperCubeTreeLocatedCursor& cursor)
 			{
-				leafIndex[cursor.cell()] = nLeaves;
-				++nLeaves;
+				leafIndex[cursor.cell()] = leafCounter;
+				++leafCounter;
 				cursor.position().normalize().toStream(out, " ");
+				out << '\n';
 			}
 			, HyperCubeTreeLocatedCursor() );
+
+			assert(leafCounter== nLeaves);
 
 			// number of dual cells is the number of primary vertices not on the boundary
 			size_t numberOfCells = 0;
@@ -76,12 +80,15 @@ namespace hct
 
 			// write cell connectivity
 			out << "CELLS " << numberOfCells << ' ' << numberOfCells*(CellNumberOfVertices+1) << '\n';
+
+			size_t cellCounter = 0;
 			DualMesh::parseDualCells( tree,
-				[&out,&leafIndex](const DuallCell& dual)
+				[&out,&leafIndex,&cellCounter](const DuallCell& dual)
 				{
 					constexpr size_t CellNumberOfVertices = 1 << Tree::D;
 					if (!dual.m_center.boundary())
 					{
+						++cellCounter;
 						out << CellNumberOfVertices;
 						for (size_t i = 0; i < CellNumberOfVertices; i++)
 						{
@@ -89,8 +96,11 @@ namespace hct
 							assert(leafIndex[dual.m_vertices[i].m_cell] != -1);
 							out << ' ' << leafIndex[dual.m_vertices[i].m_cell];
 						}
+						out << '\n';
 					}
 				});
+
+			assert(cellCounter== numberOfCells);
 
 			out << "CELL_TYPES " << numberOfCells << '\n';
 			int cellType = -1;
@@ -109,11 +119,14 @@ namespace hct
 			{
 				ITreeLevelArray* iarray = tree.array(a);
 				out << "SCALARS " << iarray->name() << " float "<< iarray->numberOfComponents()<<"\nLOOKUP_TABLE default\n";
-				tree.parseLeaves([&out,iarray](const typename Tree::DefaultTreeCursor & cursor)
+				size_t vertexCounter = 0;
+				tree.parseLeaves([&out,&vertexCounter,iarray](const typename Tree::DefaultTreeCursor & cursor)
 				{
+					++vertexCounter;
 					iarray->toStream(out,cursor.cell());
 					out << '\n';
 				});
+				assert(vertexCounter == nLeaves);
 			}
 		}
 	}

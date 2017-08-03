@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 {
 	std::string subdivisionFileName = std::string(HCT_DATA_DIR) + "/levels_8x8x8_3x3x3_x2.div";
 	std::string csgFileName = std::string(HCT_DATA_DIR) + "/deathstar.csg";
-	std::string outputFileName = std::string(HCT_DATA_DIR) + "/output.vtk";
+	std::string outputFileName = "output.vtk";
 
 	if (argc >= 2) { subdivisionFileName = argv[1]; }
 	if (argc >= 3) { csgFileName = argv[2]; }
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 		std::cerr << "Error opening file '" << outputFileName << "'" << std::endl;
 		return 1;
 	}
-	std::cout<<"output unstructured grid to "<< outputFileName << std::endl;
+	std::cout<<"output dual unstructured grid to "<< outputFileName << std::endl;
 	hct::vtk::exportDualUnstructuredGrid(tree, output);
 
 	return 0;
