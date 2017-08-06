@@ -8,10 +8,11 @@
 
 namespace hct
 {
+
 	template<unsigned int D, typename StreamT>
-	CSGSurfaceDelegate<D> csg_input(StreamT& input)
+	ScalarFunctionDelegate<D,double> csg_input(StreamT& input)
 	{
-		std::vector< CSGSurfaceDelegate<D> > stack;
+		std::vector< ScalarFunctionDelegate<D,double> > stack;
 		bool endInput = false;
 		while (input && !endInput)
 		{
@@ -23,7 +24,8 @@ namespace hct
 				for (size_t i = 0; i < D; i++) { center[i] = 0.0;  input >> center[i]; }
 				double radius = 0;
 				input >> radius;
-				stack.push_back( CSGSurfaceDelegate<D>( csg_sphere_new(Vec<double,D>(center),radius) ) );
+				auto surf = csg_sphere(Vec<double,D>(center), radius);
+				stack.push_back( scalar_function_delegate(surf) );
 			}
 			else if (token == "plane")
 			{
@@ -31,25 +33,29 @@ namespace hct
 				for (size_t i = 0; i < D; i++) { normal[i] = 0.0;  input >> normal[i]; }
 				double offset = 0;
 				input >> offset;
-				stack.push_back(CSGSurfaceDelegate<D>(csg_plane_new(Vec<double, D>(normal), offset) ) );
+				auto surf = plane_function(Vec<double, D + 1>(offset, Vec<double, D>(normal)));
+				stack.push_back(scalar_function_delegate(surf));
 			}
 			else if (token == "union")
 			{
 				auto a = stack.back(); stack.pop_back();
 				auto b = stack.back(); stack.pop_back();
-				stack.push_back( CSGSurfaceDelegate<D>( csg_union_new(a,b) ) );
+				auto surf = csg_union(a, b);
+				stack.push_back(scalar_function_delegate(surf));
 			}
 			else if (token == "intersection")
 			{
 				auto a = stack.back(); stack.pop_back();
 				auto b = stack.back(); stack.pop_back();
-				stack.push_back( CSGSurfaceDelegate<D>( csg_intersection_new(a,b) ) );
+				auto surf = csg_intersection(a, b);
+				stack.push_back(scalar_function_delegate(surf));
 			}
 			else if (token == "difference")
 			{
 				auto a = stack.back(); stack.pop_back();
 				auto b = stack.back(); stack.pop_back();
-				stack.push_back(CSGSurfaceDelegate<D>(csg_intersection_new(a, csg_negate(b) ) ) );
+				auto surf = csg_difference(a, b);
+				stack.push_back(scalar_function_delegate(surf));
 			}
 			else if (token == "end")
 			{

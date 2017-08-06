@@ -52,13 +52,24 @@ static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 			constexpr size_t nVertices = 1 << TreeCursor::D;
 			bool allInside = true;
 			bool allOutside = true;
+			Vec3d normal;
+			bool sameDirection = true;
 			for (size_t i = 0; i < nVertices; i++)
 			{
-				Vec3d p = cursor.vertexPosition(i).normalize();
-				if ( shape(p).val > 0.0) { allInside = false; }
+				Vec3d x = cursor.vertexPosition(i).normalize();
+				auto Fx = shape(x);
+				if (allInside && allOutside)
+				{
+					normal = Fx.gradient();
+				}
+				else if( normal.dot( Fx.gradient() ) < 0.0)
+				{
+					sameDirection = false;
+				}
+				if ( Fx.value() > 0.0) { allInside = false; }
 				else { allOutside = false; }
 			}
-			if (!allInside && !allOutside)
+			if ( (!allInside && !allOutside) || !sameDirection)
 			{
 				tree.refine(cursor.cell());
 			}

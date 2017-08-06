@@ -52,7 +52,7 @@ int main()
 				for (size_t i = 0; i < nVertices; i++)
 				{
 					Vec3d p = cursor.vertexPosition(i).normalize();
-					if (shape(p).val > 0.0) { allInside = false; }
+					if (shape(p).value() > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}
 				if (!allInside && !allOutside)
@@ -80,7 +80,7 @@ int main()
 		{
 			hct::HyperCubeTreeCell cell = cursor.cell();
 			Vec3d p = cursor.position().addHalfUnit().normalize();
-			double surfDist = shape(p).val;
+			double surfDist = shape(p).value();
 			cellSurfaceDistance[cell] = surfDist;
 			cellLevel[cell] = cell.level();
 			cellIndex[cell] = cell.index();

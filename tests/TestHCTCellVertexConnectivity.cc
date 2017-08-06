@@ -152,7 +152,7 @@ int main()
 				{
 					auto vertex = hct::bitfield_vec<Tree::D>(i);
 					Vec3d p = ( cursor.position() + vertex ).normalize();
-					if (shape(p).val > 0.0) { allInside = false; }
+					if (shape(p).value() > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}
 				if (!allInside && !allOutside)
@@ -202,7 +202,7 @@ int main()
 				{
 					auto vertex = hct::bitfield_vec<Tree::D>(i);
 					Vec3d p = ( cursor.position() + vertex ).normalize();
-					if (shape(p).val > 0.0) { allInside = false; }
+					if (shape(p).value() > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}
 				if (!allInside && !allOutside)

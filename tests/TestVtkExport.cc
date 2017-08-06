@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 			{
 				auto vertex = hct::bitfield_vec<Tree::D>(i);
 				Vec3d p = (cursor.position() + vertex).normalize();
-				if (shape(p).val > 0.0) { allInside = false; }
+				if (shape(p).value() > 0.0) { allInside = false; }
 				else { allOutside = false; }
 			}
 			if (!allInside && !allOutside)
@@ -105,11 +105,9 @@ int main(int argc, char* argv[])
 	{
 		hct::HyperCubeTreeCell cell = cursor.cell();
 		Vec3d p = cursor.position().addHalfUnit().normalize();
-		Vec4d plane = shape(p);
-		double surfDist = plane.val;
-		Vec3d normal(plane);
-		cellSurfaceDistance[cell] = surfDist;
-		cellSurfaceNormal[cell] = normal;
+		auto Fp = shape(p);
+		cellSurfaceDistance[cell] = Fp.value();
+		cellSurfaceNormal[cell] = Fp.gradient();
 	}
 	, LocatedTreeCursor() );
 

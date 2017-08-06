@@ -326,7 +326,7 @@ int main()
 				for (size_t i = 0; i < nVertices; i++)
 				{
 					Vec3d p = cursor.vertexPosition(i).normalize();
-					if (shape(p).val > 0.0) { allInside = false; }
+					if (shape(p).value() > 0.0) { allInside = false; }
 					else { allOutside = false; }
 				}
 				if (!allInside && !allOutside)
