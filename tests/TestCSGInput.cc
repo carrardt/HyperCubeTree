@@ -1,10 +1,11 @@
-#include "csg.h"
-#include "csg_input.h"
 
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <cstdlib>
+
+#include "ScalarFunction.h"
+#include "ScalarFunctionInput.h"
 
 using hct::Vec3d;
 std::ostream& operator << (std::ostream& out, Vec3d p) { return p.toStream(out); }
@@ -40,13 +41,13 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "read surface from " << argv[1] << std::endl;
 		std::ifstream fin(argv[1]);
-		auto surf = hct::csg_input<3>(fin);
+		auto surf = hct::scalar_function_read<3,double>(fin);
 		testSurfaceFunction(surf, 10000);
 	}
 	else
 	{
 		std::cout << "read surface from standard input"<< std::endl;
-		auto surf = hct::csg_input<3>(std::cin);
+		auto surf = hct::scalar_function_read<3, double>(std::cin);
 		testSurfaceFunction(surf, 10000);
 	}
 

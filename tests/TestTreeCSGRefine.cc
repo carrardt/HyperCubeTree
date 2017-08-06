@@ -1,9 +1,9 @@
 #include "HyperCubeTree.h"
-#include "HyperCubeTreeLocatedCursor.h"
 #include "SimpleSubdivisionScheme.h"
 #include "StaticSubdivisionScheme.h"
 #include "GridDimension.h"
-#include "csg.h"
+#include "ScalarFunction.h"
+#include "TreeRefineImplicitSurface.h"
 
 #include <iostream>
 #include <algorithm>
@@ -44,38 +44,7 @@ static void testTreeCSGRefine(SubdivisionSchemeT subdivisions)
 
 	auto T1 = std::chrono::high_resolution_clock::now();
 
-	tree.preorderParseCells(
-		[shape, &tree](TreeCursor cursor)
-	{
-		if (tree.isRefinable(cursor.cell()))
-		{
-			constexpr size_t nVertices = 1 << TreeCursor::D;
-			bool allInside = true;
-			bool allOutside = true;
-			Vec3d normal;
-			bool sameDirection = true;
-			for (size_t i = 0; i < nVertices; i++)
-			{
-				Vec3d x = cursor.vertexPosition(i).normalize();
-				auto Fx = shape(x);
-				if (allInside && allOutside)
-				{
-					normal = Fx.gradient();
-				}
-				else if( normal.dot( Fx.gradient() ) < 0.0)
-				{
-					sameDirection = false;
-				}
-				if ( Fx.value() > 0.0) { allInside = false; }
-				else { allOutside = false; }
-			}
-			if ( (!allInside && !allOutside) || !sameDirection)
-			{
-				tree.refine(cursor.cell());
-			}
-		}
-	}
-	, TreeCursor() );
+	hct::tree_refine_implicit_surface(tree, shape, subdivisions.getNumberOfLevelSubdivisions()+1 );
 
 	auto T2 = std::chrono::high_resolution_clock::now();
 	auto usec = std::chrono::duration_cast<std::chrono::microseconds>(T2 - T1);

@@ -1,7 +1,7 @@
 #include "HyperCubeTree.h"
 #include "SimpleSubdivisionScheme.h"
 #include "GridDimension.h"
-#include "csg.h"
+#include "ScalarFunction.h"
 #include "HyperCubeTreeLocatedCursor.h"
 #include "HyperCubeTreeNeighborCursor.h"
 

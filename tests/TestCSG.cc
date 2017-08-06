@@ -1,8 +1,8 @@
-#include "csg.h"
-
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+
+#include "ScalarFunction.h"
 
 using hct::Vec3d;
 using hct::Vec4d;

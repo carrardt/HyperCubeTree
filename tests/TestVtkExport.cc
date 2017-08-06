@@ -3,8 +3,8 @@
 #include "GridDimension.h"
 #include "HyperCubeTreeVertexOwnershipCursor.h"
 #include "HyperCubeTreeLocatedCursor.h"
-#include "csg.h"
-#include "csg_input.h"
+#include "ScalarFunction.h"
+#include "ScalarFunctionInput.h"
 #include "vtkLegacyExport.h"
 
 #include <iostream>
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	}
 	std::cout << "read CSG from '" << argv[2] << "'" << std::endl;
 	std::cout.flush();
-	auto shape = hct::csg_input<3>(input);
+	auto shape = hct::scalar_function_read<3,double>(input);
 
 	// refine tree given an implicit surface
 	std::cout << "build tree\n";

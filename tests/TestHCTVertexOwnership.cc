@@ -1,8 +1,9 @@
 #include "HyperCubeTree.h"
 #include "SimpleSubdivisionScheme.h"
 #include "GridDimension.h"
-#include "csg.h"
+#include "ScalarFunction.h"
 #include "HyperCubeTreeVertexOwnershipCursor.h"
+#include "TreeRefineImplicitSurface.h"
 
 #include <iostream> 
 #include <set>
@@ -137,31 +138,8 @@ int main()
 		auto shape = hct::csg_difference(sphereA, sphereB);
 
 		// refine tree given an implicit surface
-		tree.preorderParseCells([shape, &tree](const HCTVertexOwnershipCursor& cursor)
-		{
-			hct::HyperCubeTreeCell cell = cursor.cell();
-			if (tree.isRefinable(cell))
-			{
-				// refine along the implicit surface shape(x)=0
-				constexpr size_t CellNumberOfVertices = 1 << Tree::D;
-				bool allInside = true;
-				bool allOutside = true;
-				for (size_t i = 0; i < CellNumberOfVertices; i++)
-				{
-					auto vertex = hct::bitfield_vec<Tree::D>(i);
-					Vec3d p = ( cursor.position() + vertex ).normalize();
-					if (shape(p).value() > 0.0) { allInside = false; }
-					else { allOutside = false; }
-				}
-				if (!allInside && !allOutside)
-				{
-					tree.refine(cell);
-				}
-			}
-		}
-		, HCTVertexOwnershipCursor(tree) );
-
-		assert( testTreeVertexOwnership(tree) == 5292121);
+		hct::tree_refine_implicit_surface(tree, shape, subdivisions.getNumberOfLevelSubdivisions() + 1);
+		assert( testTreeVertexOwnership(tree) == 9554129);
 	}
 
 	return 0;

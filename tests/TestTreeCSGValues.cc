@@ -1,8 +1,8 @@
 #include "HyperCubeTree.h"
 #include "SimpleSubdivisionScheme.h"
 #include "GridDimension.h"
-#include "csg.h"
-#include "HyperCubeTreeLocatedCursor.h"
+#include "ScalarFunction.h"
+#include "TreeRefineImplicitSurface.h"
 
 #include <iostream>
 
@@ -41,27 +41,7 @@ int main()
 		std::cout << "level " << (i + 1) << " : size = " << cellSize << std::endl;
 	}
 
-	tree.preorderParseCells(
-		[shape, &tree](const TreeCursor& cursor)
-		{
-			if (tree.isRefinable(cursor.cell()))
-			{
-				constexpr size_t nVertices = 1 << TreeCursor::D;
-				bool allInside = true;
-				bool allOutside = true;
-				for (size_t i = 0; i < nVertices; i++)
-				{
-					Vec3d p = cursor.vertexPosition(i).normalize();
-					if (shape(p).value() > 0.0) { allInside = false; }
-					else { allOutside = false; }
-				}
-				if (!allInside && !allOutside)
-				{
-					tree.refine(cursor.cell());
-				}
-			}
-		}
-		, TreeCursor() );
+	hct::tree_refine_implicit_surface(tree, shape, subdivisions.getNumberOfLevelSubdivisions() + 1);
 
 	hct::TreeLevelArray<double> cellSurfaceDistance;
 	tree.addArray(&cellSurfaceDistance);
