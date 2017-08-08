@@ -1,0 +1,28 @@
+dimension 3
+
+levels
+	grid 8 8 8
+	grid 3 3 3
+	grid 3 3 3
+	grid 3 3 3
+end
+
+refine level 0
+refine level 1
+
+refine surface 4
+	csg_difference
+		sphere 0.0 0.0 0.0 1.0
+		sphere 0.5 0.5 0.5 0.5
+
+scalar surf_dist function
+	csg_difference
+		sphere 0.0 0.0 0.0 1.0
+		sphere 0.5 0.5 0.5 0.5
+
+gradient surf_normal function
+	csg_difference
+		sphere 0.0 0.0 0.0 1.0
+		sphere 0.5 0.5 0.5 0.5
+
+end
