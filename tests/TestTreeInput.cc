@@ -6,6 +6,8 @@
 #include <fstream>
 #include <cmath>
 #include <cstdlib>
+#include <vector>
+#include <memory>
 
 using hct::Vec3d;
 using hct::Vec4d;
@@ -31,8 +33,8 @@ int main(int argc, char* argv[])
 
 	std::cout << "read tree from " << inputFileName << std::endl;
 	std::cout.flush();
-	std::list<hct::TreeLevelArray<double> > scalars;
-	std::list<hct::TreeLevelArray<hct::Vec<double,3> > > vectors;
+	std::vector< std::shared_ptr<hct::TreeLevelArray<double> > > scalars;
+	std::vector< std::shared_ptr<hct::TreeLevelArray<hct::Vec<double,3> > > > vectors;
 	Tree tree = hct::read_tree<3,double>(input,scalars,vectors);
 	tree.toStream(std::cout);
 

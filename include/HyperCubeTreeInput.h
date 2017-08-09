@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include <list>
+#include <vector>
+#include <memory>
 
 #include "ScalarFunctionInput.h"
 #include "SimpleSubdivisionScheme.h"
@@ -13,7 +14,9 @@ namespace hct
 {
 	template<unsigned int D, typename T, typename StreamT>
 	static HyperCubeTree<D, SimpleSubdivisionScheme<D> > 
-	inline read_tree(StreamT& input, std::list<TreeLevelArray<T> >& scalars, std::list<TreeLevelArray<Vec<T,D> > >& vectors )
+	inline read_tree(StreamT& input,
+					std::vector< std::shared_ptr<hct::TreeLevelArray<T> > >& scalars,
+					std::vector< std::shared_ptr<hct::TreeLevelArray<Vec<T,D> > > >& vectors )
 	{
 		using Tree = HyperCubeTree<D, SimpleSubdivisionScheme<D> >;
 		using TreeCursor = typename Tree::DefaultTreeCursor;
@@ -95,15 +98,15 @@ namespace hct
 			input >> functionOrData;
 			if (token == "scalar")
 			{
-				TreeLevelArray<T> scalarField;
-				scalarField.setName(name);
-				tree.addArray(&scalarField);
+				std::shared_ptr<TreeLevelArray<T> > scalarField( new TreeLevelArray<T>() );
+				scalarField->setName(name);
+				tree.addArray(scalarField.get());
 				if (functionOrData == "function")
 				{
 					auto f = scalar_function_read<D, T>(input);
-					tree.preorderParseCells( [&scalarField,f](const LocatedTreeCursor& cursor)
+					tree.preorderParseCells( [scalarField,f](const LocatedTreeCursor& cursor)
 					{
-						scalarField[cursor.cell()] = f( cursor.position().addHalfUnit().normalize() ).value();
+						(*scalarField)[cursor.cell()] = f( cursor.position().addHalfUnit().normalize() ).value();
 					}, LocatedTreeCursor() );
 				}
 				else // if(functionOrData=="data")
@@ -114,15 +117,15 @@ namespace hct
 			}
 			else if( token=="gradient" )
 			{
-				TreeLevelArray< Vec<T,D> > vectorField;
-				vectorField.setName(name);
-				tree.addArray(&vectorField);
+				std::shared_ptr<TreeLevelArray< Vec<T,D> > > vectorField( new TreeLevelArray< Vec<T, D> >() );
+				vectorField->setName(name);
+				tree.addArray(vectorField.get());
 				if (functionOrData == "function")
 				{
 					auto f = scalar_function_read<D, T>(input);
-					tree.preorderParseCells([&vectorField, f](const LocatedTreeCursor& cursor)
+					tree.preorderParseCells([vectorField, f](const LocatedTreeCursor& cursor)
 					{
-						vectorField[cursor.cell()] = f(cursor.position().addHalfUnit().normalize()).gradient();
+						(*vectorField)[cursor.cell()] = f(cursor.position().addHalfUnit().normalize()).gradient();
 					}, LocatedTreeCursor());
 				}
 				else // if(functionOrData=="data")
