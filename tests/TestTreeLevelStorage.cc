@@ -33,5 +33,7 @@ int main()
 	std::cout << "cellValues after addArray :" << std::endl;
 	cellValues.toStream(std::cout);
 
+	assert(store.checkArraySizes());
+
 	return 0;
 }

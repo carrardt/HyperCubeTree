@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "ScalarFunctionInput.h"
 #include "SimpleSubdivisionScheme.h"
@@ -13,10 +12,11 @@
 namespace hct
 {
 	template<unsigned int D, typename T, typename StreamT>
-	static HyperCubeTree<D, SimpleSubdivisionScheme<D> > 
-	inline read_tree(StreamT& input,
-					std::vector< std::shared_ptr<hct::TreeLevelArray<T> > >& scalars,
-					std::vector< std::shared_ptr<hct::TreeLevelArray<Vec<T,D> > > >& vectors )
+	static inline
+	HyperCubeTree<D, SimpleSubdivisionScheme<D> >*
+	read_tree(StreamT& input,
+					std::vector< hct::TreeLevelArray<T>* > & scalars,
+					std::vector< hct::TreeLevelArray<Vec<T,D> >* > & vectors )
 	{
 		using Tree = HyperCubeTree<D, SimpleSubdivisionScheme<D> >;
 		using TreeCursor = typename Tree::DefaultTreeCursor;
@@ -46,7 +46,7 @@ namespace hct
 			abort(); 
 		}
 
-		Tree tree(levels);
+		Tree* tree = new Tree(levels);
 
 		input >> token;
 		if (token == "refine")
@@ -58,12 +58,12 @@ namespace hct
 				{
 					size_t l = 0;
 					input >> l;
-					assert(l >= 0 && l < tree.getNumberOfLevels());
-					tree.parseLeaves([&tree,l](const TreeCursor& cursor)
+					assert(l >= 0 && l < tree->getNumberOfLevels());
+					tree->parseLeaves([&tree,l](const TreeCursor& cursor)
 					{
-						if (tree.isRefinable(cursor.cell()) && cursor.cell().level() == l)
+						if (tree->isRefinable(cursor.cell()) && cursor.cell().level() == l)
 						{
-							tree.refine(cursor.cell());
+							tree->refine(cursor.cell());
 						}
 					});
 				}
@@ -72,7 +72,7 @@ namespace hct
 					size_t maxLevel = 0;
 					input >> maxLevel;
 					auto surf = scalar_function_read<D, T>(input);
-					tree_refine_implicit_surface(tree, surf, maxLevel);
+					tree_refine_implicit_surface(*tree, surf, maxLevel);
 				}
 				else
 				{
@@ -98,13 +98,14 @@ namespace hct
 			input >> functionOrData;
 			if (token == "scalar")
 			{
-				std::shared_ptr<TreeLevelArray<T> > scalarField( new TreeLevelArray<T>() );
+				TreeLevelArray<T>* scalarField = new TreeLevelArray<T>();
 				scalarField->setName(name);
-				tree.addArray(scalarField.get());
+				scalars.push_back(scalarField);
+				tree->addArray(scalarField);
 				if (functionOrData == "function")
 				{
 					auto f = scalar_function_read<D, T>(input);
-					tree.preorderParseCells( [scalarField,f](const LocatedTreeCursor& cursor)
+					tree->preorderParseCells( [scalarField,f](const LocatedTreeCursor& cursor)
 					{
 						(*scalarField)[cursor.cell()] = f( cursor.position().addHalfUnit().normalize() ).value();
 					}, LocatedTreeCursor() );
@@ -117,13 +118,14 @@ namespace hct
 			}
 			else if( token=="gradient" )
 			{
-				std::shared_ptr<TreeLevelArray< Vec<T,D> > > vectorField( new TreeLevelArray< Vec<T, D> >() );
+				TreeLevelArray< Vec<T,D> >* vectorField = new TreeLevelArray< Vec<T, D> >();
 				vectorField->setName(name);
-				tree.addArray(vectorField.get());
+				vectors.push_back(vectorField);
+				tree->addArray(vectorField);
 				if (functionOrData == "function")
 				{
 					auto f = scalar_function_read<D, T>(input);
-					tree.preorderParseCells([vectorField, f](const LocatedTreeCursor& cursor)
+					tree->preorderParseCells([vectorField, f](const LocatedTreeCursor& cursor)
 					{
 						(*vectorField)[cursor.cell()] = f(cursor.position().addHalfUnit().normalize()).gradient();
 					}, LocatedTreeCursor());

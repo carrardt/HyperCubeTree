@@ -95,6 +95,11 @@ namespace hct
 			return m_storage.array(i + 1);
 		}
 
+		inline bool checkArraySizes() const
+		{
+			return m_storage.checkArraySizes();
+		}
+
 		// returns true if cell is not a tree cell (nil, or ill-formed) or if it is a leaf;
 		inline bool isTerminal(HyperCubeTreeCell cell) const
 		{
