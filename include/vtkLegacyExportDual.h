@@ -29,7 +29,7 @@ namespace hct
 			using HyperCubeTreeLocatedCursor = hct::HyperCubeTreeLocatedCursor<Tree>;
 			using DefaultTreeCursor = typename Tree::DefaultTreeCursor;
 			using DualMesh = hct::HyperCubeTreeDualMesh<Tree>;
-			using DuallCell = DualMesh::DuallCell;
+			using DuallCell = typename DualMesh::DuallCell;
 
 			assert(D >= 1 && D <= 3);
 

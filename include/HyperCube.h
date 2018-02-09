@@ -151,14 +151,14 @@ namespace hct
 	  template<typename VertBFTail, typename FuncT>
 	  inline void forEachComponentSharingVertex( CBitField<Bit0, VertBFTail> , FuncT f)
 	  {
-		  _0.forEachComponentSharingVertex(typename VertBFTail(), f);
-		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _0.forEachComponentSharingVertex( VertBFTail(), f);
+		  _X.forEachComponentSharingVertex( VertBFTail(), f);
 	  }
 	  template<typename VertBFTail, typename FuncT>
 	  inline void forEachComponentSharingVertex(CBitField<Bit1, VertBFTail> , FuncT f)
 	  {
-		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
-		  _1.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _X.forEachComponentSharingVertex( VertBFTail(), f);
+		  _1.forEachComponentSharingVertex( VertBFTail(), f);
 	  }
 
 	  template<typename VertBF, typename FuncT>
@@ -166,14 +166,14 @@ namespace hct
 	  template<typename VertBFTail, typename FuncT>
 	  inline void forEachComponentSharingVertex(CBitField<Bit0, VertBFTail>, FuncT f) const
 	  {
-		  _0.forEachComponentSharingVertex(typename VertBFTail(), f);
-		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _0.forEachComponentSharingVertex( VertBFTail(), f);
+		  _X.forEachComponentSharingVertex( VertBFTail(), f);
 	  }
 	  template<typename VertBFTail, typename FuncT>
 	  inline void forEachComponentSharingVertex(CBitField<Bit1, VertBFTail>, FuncT f) const
 	  {
-		  _X.forEachComponentSharingVertex(typename VertBFTail(), f);
-		  _1.forEachComponentSharingVertex(typename VertBFTail(), f);
+		  _X.forEachComponentSharingVertex( VertBFTail(), f);
+		  _1.forEachComponentSharingVertex( VertBFTail(), f);
 	  }
 
 	  // =============== iterate over all the values stored for each component ============

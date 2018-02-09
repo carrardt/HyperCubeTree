@@ -24,8 +24,8 @@ namespace hct
 			using PositionF = hct::Vec<double, D>;
 			using HCTVertexOwnershipCursor = hct::HyperCubeTreeVertexOwnershipCursor<Tree>;
 			using CellVertexConnectivity = hct::CellVertexConnectivity<Tree>;
-			using CellVertexIds = CellVertexConnectivity::CellVertexIds;
-			using VertexIdArray = CellVertexConnectivity::VertexIdArray;
+			using CellVertexIds = typename CellVertexConnectivity::CellVertexIds;
+			using VertexIdArray = typename CellVertexConnectivity::VertexIdArray;
 
 			assert(D >= 1 && D <= 3);
 

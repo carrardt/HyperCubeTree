@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cmath>
 #include <string>
+#include <limits>
 
 #include "NumericalValueTraits.h"
 

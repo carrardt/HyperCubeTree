@@ -182,7 +182,7 @@ namespace hct
 
 
 	template<typename CondFuncT,typename Func1T, typename Func2T,
-		bool is_valid = (Func1T::D == Func2T::D) && (CondFuncT::D== Func1T::D) && std::is_same<CondFuncT::T,bool>::value && std::is_same<typename Func1T::T, typename Func2T::T>::value >
+		bool is_valid = (Func1T::D == Func2T::D) && (CondFuncT::D== Func1T::D) && std::is_same<typename CondFuncT::T,bool>::value && std::is_same<typename Func1T::T, typename Func2T::T>::value >
 	struct ConditionalFunction {};
 
 	template<typename CondFuncT, typename Func1T, typename Func2T>
