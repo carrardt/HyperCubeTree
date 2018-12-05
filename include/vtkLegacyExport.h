@@ -89,7 +89,7 @@ namespace hct
 				out << "SCALARS " << iarray->name() << " float "<< iarray->numberOfComponents()<<"\nLOOKUP_TABLE default\n";
 				tree.parseLeaves([&out,iarray](const typename Tree::DefaultTreeCursor & cursor)
 				{
-					iarray->toStream(out,cursor.cell());
+					iarray->printCell(out,cursor.cell());
 					out << '\n';
 				});
 			}

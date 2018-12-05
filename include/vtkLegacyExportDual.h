@@ -123,7 +123,7 @@ namespace hct
 				tree.parseLeaves([&out,&vertexCounter,iarray](const typename Tree::DefaultTreeCursor & cursor)
 				{
 					++vertexCounter;
-					iarray->toStream(out,cursor.cell());
+					iarray->printCell(out,cursor.cell());
 					out << '\n';
 				});
 				assert(vertexCounter == nLeaves);

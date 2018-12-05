@@ -18,20 +18,20 @@ int main()
 	store.addArray(&cellIndices);
 
 	std::cout << "cellIndices before resize :" << std::endl;
-	cellIndices.toStream(std::cout);
+	cellIndices.print(std::cout);
 
 	store.resize(0,10);
 	store.resize(1,100);
 	store.resize(2,1000);
 
 	std::cout << "cellIndices after resize :" << std::endl;
-	cellIndices.toStream(std::cout);
+	cellIndices.print(std::cout);
 
 	hct::TreeLevelArray<double> cellValues;
 	store.addArray(&cellValues);
 
 	std::cout << "cellValues after addArray :" << std::endl;
-	cellValues.toStream(std::cout);
+	cellValues.print(std::cout);
 
 	assert(store.checkArraySizes());
 
